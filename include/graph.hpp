@@ -32,6 +32,11 @@ public:
                                [](index_type init, auto elem){ return init + elem.second.size(); });
     }
 
+    void insert_node(const node_type &node)
+    {
+        nodes_.emplace_back(node);
+    }
+
     void insert_edge(const node_type &from, const node_type &to)
     {
         auto from_it = std::ranges::find(nodes_, from);
@@ -43,11 +48,6 @@ public:
             return;
 
         adjacency_list_[std::addressof(*from_it)].emplace_back(to_it);
-    }
-
-    void insert_node(const node_type &node)
-    {
-        nodes_.emplace_back(node);
     }
 
     bool are_adjacent(const node_type &from, const node_type &to) const
