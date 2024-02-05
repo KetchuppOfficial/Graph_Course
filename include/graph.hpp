@@ -52,6 +52,30 @@ public:
         adjacency_list_[std::addressof(*from_it)].emplace_back(to_it);
     }
 
+    void erase_node(const node_type &node)
+    {
+        auto it = std::ranges::find(nodes_, node);
+        if (it == nodes_.end())
+            return;
+
+        adjacency_list_.erase(std::addressof(*it));
+        nodes_.erase(it);
+    }
+
+    void erase_edge(const node_type& from, const node_type &to)
+    {
+        auto from_it = std::ranges::find(nodes_, from);
+        if (from_it == nodes_.end())
+            return;
+
+        auto to_it = std::ranges::find(nodes_, to);
+        if (to_it == nodes_.end())
+            return;
+
+        auto &edges = adjacency_list_[std::addressof(*from_it)];
+        edges.erase(std::ranges::find(edges, to_it));
+    }
+
     bool are_adjacent(const node_type &from, const node_type &to) const
     {
         auto from_it = std::ranges::find(nodes_, from);
