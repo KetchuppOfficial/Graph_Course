@@ -28,8 +28,8 @@ public:
     size_type n_nodes() const { return nodes_.size(); }
     size_type n_edges() const
     {
-        return std::accumulate(adjacency_list_.begin(), adjacency_list_.end(), index_type{0},
-                               [](index_type init, auto elem){ return init + elem.second.size(); });
+        return std::accumulate(adjacency_list_.begin(), adjacency_list_.end(), size_type{0},
+                               [](size_type init, auto elem){ return init + elem.second.size(); });
     }
 
     bool empty() const { return n_nodes() == 0; }
