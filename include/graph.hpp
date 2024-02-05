@@ -32,6 +32,8 @@ public:
                                [](index_type init, auto elem){ return init + elem.second.size(); });
     }
 
+    bool empty() const { return n_nodes() == 0; }
+
     void insert_node(const node_type &node)
     {
         nodes_.emplace_back(node);
