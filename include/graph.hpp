@@ -2,6 +2,7 @@
 #define INCLUDE_GRAPH_HPP
 
 #include <unordered_map>
+#include <unordered_set>
 #include <list>
 #include <numeric>
 #include <algorithm>
@@ -14,12 +15,13 @@ template<typename T>
 class Directed_Graph final
 {
     using node_type = T;
+    using const_node_ptr = const node_type *;
     using nodes_cont = std::list<node_type>;
     using size_type = typename nodes_cont::size_type;
     using node_iterator = typename nodes_cont::iterator;
 
     nodes_cont nodes_;
-    std::unordered_map<const node_type *, std::list<node_iterator>> adjacency_list_;
+    std::unordered_map<const_node_ptr, std::unordered_set<const_node_ptr>> adjacency_list_;
 
 public:
 
@@ -29,7 +31,7 @@ public:
     size_type n_edges() const
     {
         return std::accumulate(adjacency_list_.begin(), adjacency_list_.end(), size_type{0},
-                               [](size_type init, auto elem){ return init + elem.second.size(); });
+                               [](size_type init, auto &elem){ return init + elem.second.size(); });
     }
 
     bool empty() const { return n_nodes() == 0; }
@@ -49,7 +51,7 @@ public:
         if (to_it == nodes_.end())
             return;
 
-        adjacency_list_[std::addressof(*from_it)].emplace_back(to_it);
+        adjacency_list_[std::addressof(*from_it)].insert(std::addressof(*to_it));
     }
 
     void erase_node(const node_type &node)
@@ -72,8 +74,7 @@ public:
         if (to_it == nodes_.end())
             return;
 
-        auto &edges = adjacency_list_[std::addressof(*from_it)];
-        edges.erase(std::ranges::find(edges, to_it));
+        adjacency_list_[std::addressof(*from_it)].erase(std::addressof(*to_it));
     }
 
     bool are_adjacent(const node_type &from, const node_type &to) const
@@ -82,17 +83,17 @@ public:
         if (from_it == nodes_.end())
             return false;
 
-        auto edges_it = adjacency_list_.find(std::addressof(*from_it));
-        if (edges_it == adjacency_list_.end())
-            return false;
-
         auto to_it = std::ranges::find(nodes_, to);
         if (to_it == nodes_.end())
             return false;
 
+        auto edges_it = adjacency_list_.find(std::addressof(*from_it));
+        if (edges_it == adjacency_list_.end())
+            return false;
+
         auto &edges = edges_it->second;
 
-        return std::ranges::find(edges, to_it) != edges.end();
+        return edges.find(std::addressof(*to_it)) != edges.end();
     }
 };
 
