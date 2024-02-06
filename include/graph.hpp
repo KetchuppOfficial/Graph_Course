@@ -103,6 +103,11 @@ public:
 
         return edges.find(std::addressof(*to_it)) != edges.end();
     }
+
+    bool contains(const node_type &node) const
+    {
+        return std::ranges::find(nodes_, node) != nodes_.end();
+    }
 };
 
 } // namespace hisi
