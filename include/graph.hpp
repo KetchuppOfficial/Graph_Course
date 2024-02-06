@@ -7,6 +7,8 @@
 #include <numeric>
 #include <algorithm>
 #include <memory>
+#include <iterator>
+#include <initializer_list>
 
 namespace hisi
 {
@@ -15,17 +17,23 @@ template<typename T>
 class Directed_Graph final
 {
     using node_type = T;
+
     using const_node_ptr = const node_type *;
     using nodes_cont = std::list<node_type>;
-    using size_type = typename nodes_cont::size_type;
-    using node_iterator = typename nodes_cont::iterator;
 
     nodes_cont nodes_;
     std::unordered_map<const_node_ptr, std::unordered_set<const_node_ptr>> adjacency_list_;
 
 public:
 
+    using size_type = typename nodes_cont::size_type;
+
     Directed_Graph() = default;
+
+    Directed_Graph(std::initializer_list<node_type> il)
+    {
+        std::ranges::copy(il, std::back_inserter(nodes_));
+    }
 
     size_type n_nodes() const { return nodes_.size(); }
     size_type n_edges() const
