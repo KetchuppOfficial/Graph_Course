@@ -16,18 +16,14 @@ namespace hisi
 template<typename T>
 class Directed_Graph final
 {
-    using node_type = T;
+    using nodes_cont = std::list<T>;
 
-    using const_node_ptr = const node_type *;
-    using nodes_cont = std::list<node_type>;
+public:
+
+    using node_type = T;
     using size_type = typename nodes_cont::size_type;
     using iterator = typename nodes_cont::iterator;
     using const_iterator = typename nodes_cont::const_iterator;
-
-    nodes_cont nodes_;
-    std::unordered_map<size_type, std::unordered_set<size_type>> adjacency_list_;
-
-public:
 
     Directed_Graph() = default;
 
@@ -127,6 +123,9 @@ private:
     {
         return std::distance(begin(), it);
     }
+
+    nodes_cont nodes_;
+    std::unordered_map<size_type, std::unordered_set<size_type>> adjacency_list_;
 };
 
 } // namespace hisi
