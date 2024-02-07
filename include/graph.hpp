@@ -36,6 +36,9 @@ public:
         std::ranges::copy(il, std::back_inserter(nodes_));
     }
 
+    // As far as adjacency list is totally based on indexes, the default copy- and move- constructor
+    // and assignment are acceptable
+
     size_type n_nodes() const { return nodes_.size(); }
     size_type n_edges() const
     {
