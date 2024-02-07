@@ -20,13 +20,14 @@ class Directed_Graph final
 
     using const_node_ptr = const node_type *;
     using nodes_cont = std::list<node_type>;
+    using size_type = typename nodes_cont::size_type;
+    using iterator = typename nodes_cont::iterator;
+    using const_iterator = typename nodes_cont::const_iterator;
 
     nodes_cont nodes_;
-    std::unordered_map<const_node_ptr, std::unordered_set<const_node_ptr>> adjacency_list_;
+    std::unordered_map<size_type, std::unordered_set<size_type>> adjacency_list_;
 
 public:
-
-    using size_type = typename nodes_cont::size_type;
 
     Directed_Graph() = default;
 
@@ -44,6 +45,14 @@ public:
 
     bool empty() const { return n_nodes() == 0; }
 
+    iterator begin() { return nodes_.begin(); }
+    const_iterator begin() const { return nodes_.begin(); }
+    const_iterator cbegin() const { return begin(); }
+
+    iterator end() { return nodes_.end(); }
+    const_iterator end() const { return nodes_.end(); }
+    const_iterator cend() const { return end(); }
+
     void insert_node(const node_type &node)
     {
         nodes_.emplace_back(node);
@@ -52,61 +61,68 @@ public:
     void insert_edge(const node_type &from, const node_type &to)
     {
         auto from_it = std::ranges::find(nodes_, from);
-        if (from_it == nodes_.end())
+        if (from_it == end())
             return;
 
         auto to_it = std::ranges::find(nodes_, to);
-        if (to_it == nodes_.end())
+        if (to_it == end())
             return;
 
-        adjacency_list_[std::addressof(*from_it)].insert(std::addressof(*to_it));
+        adjacency_list_[index_of(from_it)].insert(index_of(to_it));
     }
 
     void erase_node(const node_type &node)
     {
         auto it = std::ranges::find(nodes_, node);
-        if (it == nodes_.end())
+        if (it == end())
             return;
 
-        adjacency_list_.erase(std::addressof(*it));
+        adjacency_list_.erase(index_of(it));
         nodes_.erase(it);
     }
 
     void erase_edge(const node_type& from, const node_type &to)
     {
         auto from_it = std::ranges::find(nodes_, from);
-        if (from_it == nodes_.end())
+        if (from_it == end())
             return;
 
         auto to_it = std::ranges::find(nodes_, to);
-        if (to_it == nodes_.end())
+        if (to_it == end())
             return;
 
-        adjacency_list_[std::addressof(*from_it)].erase(std::addressof(*to_it));
+        adjacency_list_[index_of(from_it)].erase(index_of(to_it));
     }
 
     bool are_adjacent(const node_type &from, const node_type &to) const
     {
         auto from_it = std::ranges::find(nodes_, from);
-        if (from_it == nodes_.end())
+        if (from_it == end())
             return false;
 
         auto to_it = std::ranges::find(nodes_, to);
-        if (to_it == nodes_.end())
+        if (to_it == end())
             return false;
 
-        auto edges_it = adjacency_list_.find(std::addressof(*from_it));
+        auto edges_it = adjacency_list_.find(index_of(from_it));
         if (edges_it == adjacency_list_.end())
             return false;
 
         auto &edges = edges_it->second;
 
-        return edges.find(std::addressof(*to_it)) != edges.end();
+        return edges.find(index_of(to_it)) != edges.end();
     }
 
     bool contains(const node_type &node) const
     {
-        return std::ranges::find(nodes_, node) != nodes_.end();
+        return std::ranges::find(nodes_, node) != end();
+    }
+
+private:
+
+    size_type index_of(const_iterator it) const
+    {
+        return std::distance(begin(), it);
     }
 };
 
