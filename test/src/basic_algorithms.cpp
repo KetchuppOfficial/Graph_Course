@@ -2,22 +2,25 @@
 
 #include "graph.hpp"
 
-TEST(Basics, General_Constructors)
+TEST(Basics, Default_Constructor)
 {
-    hisi::Directed_Graph<int> g1;
+    hisi::Directed_Graph<int> g;
 
-    EXPECT_EQ(g1.n_nodes(), 0);
-    EXPECT_EQ(g1.n_edges(), 0);
-    EXPECT_TRUE(g1.empty());
+    EXPECT_EQ(g.n_nodes(), 0);
+    EXPECT_EQ(g.n_edges(), 0);
+    EXPECT_TRUE(g.empty());
+}
 
-    hisi::Directed_Graph g2{1, 2, 3, 4};
+TEST(Basics, Initializer_List_Constructor)
+{
+    hisi::Directed_Graph g{1, 2, 3, 4};
 
-    EXPECT_FALSE(g2.empty());
+    EXPECT_FALSE(g.empty());
 
-    EXPECT_EQ(g2.n_nodes(), 4);
+    EXPECT_EQ(g.n_nodes(), 4);
 
-    g2.insert_edge(2, 3);
-    g2.insert_edge(1, 4);
+    g.insert_edge(2, 3);
+    g.insert_edge(1, 4);
 
-    EXPECT_EQ(g2.n_edges(), 2);
+    EXPECT_EQ(g.n_edges(), 2);
 }
