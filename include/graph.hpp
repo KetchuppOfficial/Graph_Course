@@ -9,6 +9,8 @@
 #include <memory>
 #include <iterator>
 #include <initializer_list>
+#include <optional>
+#include <queue>
 
 namespace hisi
 {
@@ -16,116 +18,206 @@ namespace hisi
 template<typename T>
 class Directed_Graph final
 {
-    using nodes_cont = std::list<T>;
+    using vertex_cont = std::list<T>;
 
 public:
 
-    using node_type = T;
-    using size_type = typename nodes_cont::size_type;
-    using iterator = typename nodes_cont::iterator;
-    using const_iterator = typename nodes_cont::const_iterator;
+    using vertex_type = T;
+    using size_type = typename vertex_cont::size_type;
+    using iterator = typename vertex_cont::iterator;
+    using const_iterator = typename vertex_cont::const_iterator;
+    using pointer = vertex_type *;
+    using const_pointer = const vertex_type *;
+    using const_reference = const vertex_type &;
 
     Directed_Graph() = default;
 
-    Directed_Graph(std::initializer_list<node_type> il)
+    Directed_Graph(std::initializer_list<vertex_type> il)
     {
-        std::ranges::copy(il, std::back_inserter(nodes_));
+        std::ranges::copy(il, std::back_inserter(vertices_));
     }
 
-    // As far as adjacency list is totally based on indexes, the default copy- and move- constructor
-    // and assignment are acceptable
+    Directed_Graph(const Directed_Graph &rhs) = delete;
+    Directed_Graph &operator=(const Directed_Graph &rhs) = delete;
 
-    size_type n_nodes() const { return nodes_.size(); }
+    Directed_Graph(Directed_Graph &&rhs) = default;
+    Directed_Graph &operator=(Directed_Graph &rhs) = default;
+
+    size_type n_vertices() const { return vertices_.size(); }
     size_type n_edges() const
     {
         return std::accumulate(adjacency_list_.begin(), adjacency_list_.end(), size_type{0},
                                [](size_type init, auto &elem){ return init + elem.second.size(); });
     }
 
-    bool empty() const { return n_nodes() == 0; }
+    bool empty() const { return n_vertices() == 0; }
 
-    iterator begin() { return nodes_.begin(); }
-    const_iterator begin() const { return nodes_.begin(); }
+    iterator begin() { return vertices_.begin(); }
+    const_iterator begin() const { return vertices_.begin(); }
     const_iterator cbegin() const { return begin(); }
 
-    iterator end() { return nodes_.end(); }
-    const_iterator end() const { return nodes_.end(); }
+    iterator end() { return vertices_.end(); }
+    const_iterator end() const { return vertices_.end(); }
     const_iterator cend() const { return end(); }
 
-    void insert_node(const node_type &node)
+    // Operations on vertices
+
+    // O(V)
+    iterator find_vertex(const_reference v) { return std::ranges::find(vertices_, v); }
+    const_iterator find_vertex(const_reference v) const { return std::ranges::find(vertices_, v); }
+
+    // O(V)
+    bool contains(const_reference v) const { return find_vertex(v) != end(); }
+
+    // O(1)
+    iterator insert_vertex(const_reference v)
     {
-        nodes_.emplace_back(node);
+        vertices_.emplace_back(v);
+        return std::prev(vertices_.end());
     }
 
-    void insert_edge(const node_type &from, const node_type &to)
+    // O(1)
+    void erase_vertex(const_iterator it)
     {
-        auto from_it = std::ranges::find(nodes_, from);
-        if (from_it == end())
-            return;
-
-        auto to_it = std::ranges::find(nodes_, to);
-        if (to_it == end())
-            return;
-
-        adjacency_list_[index_of(from_it)].insert(index_of(to_it));
+        adjacency_list_.erase(vertex_addr(it));
+        vertices_.erase(it);
     }
 
-    void erase_node(const node_type &node)
+    // O(V)
+    void erase_vertex(const_reference v)
     {
-        auto it = std::ranges::find(nodes_, node);
-        if (it == end())
-            return;
-
-        adjacency_list_.erase(index_of(it));
-        nodes_.erase(it);
+        auto it = find_vertex(v);
+        if (it != end())
+            erase_vertex(it);
     }
 
-    void erase_edge(const node_type& from, const node_type &to)
+    // Operations on edges
+
+    // O(1)
+    void insert_edge(const_iterator from_it, const_iterator to_it)
     {
-        auto from_it = std::ranges::find(nodes_, from);
-        if (from_it == end())
-            return;
-
-        auto to_it = std::ranges::find(nodes_, to);
-        if (to_it == end())
-            return;
-
-        adjacency_list_[index_of(from_it)].erase(index_of(to_it));
+        adjacency_list_[vertex_addr(from_it)].insert(vertex_addr(to_it));
     }
 
-    bool are_adjacent(const node_type &from, const node_type &to) const
+    // O(V)
+    void insert_edge(const_reference from, const_reference to)
     {
-        auto from_it = std::ranges::find(nodes_, from);
-        if (from_it == end())
-            return false;
+        auto from_it = find_vertex(from);
+        if (from_it != end())
+        {
+            auto to_it = find_vertex(to);
+            if (to_it != end())
+                insert_edge(from_it, to_it);
+        }
+    }
 
-        auto to_it = std::ranges::find(nodes_, to);
-        if (to_it == end())
-            return false;
+    // O(1)
+    void erase_edge(const_iterator from_it, const_iterator to_it)
+    {
+        adjacency_list_[vertex_addr(from_it)].erase(vertex_addr(to_it));
+    }
 
-        auto edges_it = adjacency_list_.find(index_of(from_it));
+    // O(V)
+    void erase_edge(const_reference from, const_reference to)
+    {
+        auto from_it = find_vertex(from);
+        if (from_it != end())
+        {
+            auto to_it = find_vertex(to);
+            if (to_it != end())
+                erase_edge(from_it, to_it);
+        }
+    }
+
+    // Mixed operations
+
+    // O(1)
+    bool are_adjacent(const_iterator from_it, const_iterator to_it) const
+    {
+        auto edges_it = adjacency_list_.find(vertex_addr(from_it));
         if (edges_it == adjacency_list_.end())
             return false;
-
-        auto &edges = edges_it->second;
-
-        return edges.find(index_of(to_it)) != edges.end();
+        else
+        {
+            auto &edges = edges_it->second;
+            return edges.find(vertex_addr(to_it)) != edges.end();
+        }
     }
 
-    bool contains(const node_type &node) const
+    // O(V)
+    bool are_adjacent(const_reference from, const_reference to) const
     {
-        return std::ranges::find(nodes_, node) != end();
+        auto from_it = find_vertex(from);
+        if (from_it == end())
+            return false;
+
+        auto to_it = find_vertex(to);
+        if (to_it == end())
+            return false;
+
+        return are_adjacent(from_it, to_it);
+    }
+
+    // Breadth-first search (BFS)
+
+    struct BFS_Node final
+    {
+        enum class Color { white, gray };
+
+        std::optional<std::size_t> distance_;
+        const_pointer predecessor_{end()};
+        Color color_{Color::white};
+
+        BFS_Node() = default;
+        BFS_Node(std::size_t d, Color color) : distance_{d}, color_{color} {}
+    };
+
+    void bfs(const_iterator source_it)
+    {
+        if (source_it == end())
+            return;
+
+        std::unordered_map<const_pointer, BFS_Node> bfs_info;
+
+        for (auto it = begin(); it != source_it; ++it)
+            bfs_info.emplace(vertex_addr(it));
+
+        const_pointer source_addr = vertex_addr(source_it);
+        bfs_info.emplace(source_addr, 0, BFS_Node::Color::gray);
+
+        for (auto it = std::next(source_it), ite = end(); it != ite; ++it)
+            bfs_info.emplace(vertex_addr(it));
+
+        std::queue<const_pointer> Q{source_addr};
+        while (!Q.empty())
+        {
+            const_pointer u = Q.front();
+            Q.pop();
+
+            auto u_list_it = adjacency_list_.find(u);
+            if (u_list_it != adjacency_list_.end())
+            {
+                for (auto v : u_list_it->second)
+                {
+                    BFS_Node &v_info = bfs_info[v];
+                    if (v_info.color_ == BFS_Node::Color::white)
+                    {
+                        v_info.color_ = BFS_Node::Color::gray;
+                        v_info.distance_ = bfs_info[u].distance_ + 1;
+                        v_info.predecessor_ = u;
+                    }
+                }
+            }
+        }
     }
 
 private:
 
-    size_type index_of(const_iterator it) const
-    {
-        return std::distance(begin(), it);
-    }
+    static pointer vertex_addr(iterator it) { return std::addressof(*it); }
+    static const_pointer vertex_addr(const_iterator it) { return std::addressof(*it); }
 
-    nodes_cont nodes_;
-    std::unordered_map<size_type, std::unordered_set<size_type>> adjacency_list_;
+    vertex_cont vertices_;
+    std::unordered_map<const_pointer, std::unordered_set<const_pointer>> adjacency_list_;
 };
 
 } // namespace hisi
