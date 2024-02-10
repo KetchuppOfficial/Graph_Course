@@ -205,6 +205,7 @@ public:
                         v_info.color_ = BFS_Node::Color::gray;
                         v_info.distance_ = bfs_info[u].distance_ + 1;
                         v_info.predecessor_ = u;
+                        Q.push(v);
                     }
                 }
             }
