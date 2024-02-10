@@ -4,7 +4,7 @@
 
 TEST(Basics, Default_Constructor)
 {
-    hisi::Directed_Graph<int> g;
+    graphs::Directed_Graph<int> g;
 
     EXPECT_EQ(g.n_vertices(), 0);
     EXPECT_EQ(g.n_edges(), 0);
@@ -13,7 +13,7 @@ TEST(Basics, Default_Constructor)
 
 TEST(Basics, Initializer_List_Constructor)
 {
-    hisi::Directed_Graph g{1, 2, 3, 4};
+    graphs::Directed_Graph g{1, 2, 3, 4};
 
     EXPECT_FALSE(g.empty());
 

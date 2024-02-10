@@ -12,7 +12,7 @@
 #include <optional>
 #include <queue>
 
-namespace hisi
+namespace graphs
 {
 
 template<typename T>
@@ -220,6 +220,6 @@ private:
     std::unordered_map<const_pointer, std::unordered_set<const_pointer>> adjacency_list_;
 };
 
-} // namespace hisi
+} // namespace graphs
 
 #endif // INCLUDE_GRAPH_HPP
