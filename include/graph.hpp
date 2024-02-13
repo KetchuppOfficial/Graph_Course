@@ -11,6 +11,9 @@
 #include <initializer_list>
 #include <optional>
 #include <queue>
+#include <map>
+#include <utility>
+#include <bit>
 
 namespace graphs
 {
@@ -26,9 +29,23 @@ public:
     using size_type = typename vertex_cont::size_type;
     using iterator = typename vertex_cont::iterator;
     using const_iterator = typename vertex_cont::const_iterator;
-    using pointer = vertex_type *;
-    using const_pointer = const vertex_type *;
     using const_reference = const vertex_type &;
+
+    struct iterator_hash final
+    {
+        std::size_t operator()(const_iterator it) const noexcept
+        {
+            return std::bit_cast<std::size_t>(it);
+        }
+    };
+
+private:
+
+    using edges_cont = std::unordered_set<const_iterator, iterator_hash>;
+    using edge_iterator = typename edges_cont::const_iterator;
+    using adjacency_range = std::pair<edge_iterator, edge_iterator>;
+
+public:
 
     Directed_Graph() = default;
 
@@ -79,7 +96,7 @@ public:
     // O(1)
     void erase_vertex(const_iterator it)
     {
-        adjacency_list_.erase(vertex_addr(it));
+        adjacency_list_.erase(it);
         vertices_.erase(it);
     }
 
@@ -96,7 +113,7 @@ public:
     // O(1)
     void insert_edge(const_iterator from_it, const_iterator to_it)
     {
-        adjacency_list_[vertex_addr(from_it)].insert(vertex_addr(to_it));
+        adjacency_list_[from_it].insert(to_it);
     }
 
     // O(V)
@@ -114,7 +131,7 @@ public:
     // O(1)
     void erase_edge(const_iterator from_it, const_iterator to_it)
     {
-        adjacency_list_[vertex_addr(from_it)].erase(vertex_addr(to_it));
+        adjacency_list_[from_it].erase(to_it);
     }
 
     // O(V)
@@ -134,13 +151,13 @@ public:
     // O(1)
     bool are_adjacent(const_iterator from_it, const_iterator to_it) const
     {
-        auto edges_it = adjacency_list_.find(vertex_addr(from_it));
+        auto edges_it = adjacency_list_.find(from_it);
         if (edges_it == adjacency_list_.end())
             return false;
         else
         {
             auto &edges = edges_it->second;
-            return edges.find(vertex_addr(to_it)) != edges.end();
+            return edges.find(to_it) != edges.end();
         }
     }
 
@@ -158,67 +175,141 @@ public:
         return are_adjacent(from_it, to_it);
     }
 
-    // Breadth-first search (BFS)
-
-    struct BFS_Node final
+    std::optional<adjacency_range> adjacent_vertices(const_iterator it) const
     {
-        enum class Color { white, gray };
-
-        std::optional<std::size_t> distance_;
-        const_pointer predecessor_{end()};
-        Color color_{Color::white};
-
-        BFS_Node() = default;
-        BFS_Node(std::size_t d, Color color) : distance_{d}, color_{color} {}
-    };
-
-    void bfs(const_iterator source_it)
-    {
-        if (source_it == end())
-            return;
-
-        std::unordered_map<const_pointer, BFS_Node> bfs_info;
-
-        for (auto it = begin(); it != source_it; ++it)
-            bfs_info.emplace(vertex_addr(it));
-
-        const_pointer source_addr = vertex_addr(source_it);
-        bfs_info.emplace(source_addr, 0, BFS_Node::Color::gray);
-
-        for (auto it = std::next(source_it), ite = end(); it != ite; ++it)
-            bfs_info.emplace(vertex_addr(it));
-
-        std::queue<const_pointer> Q{source_addr};
-        while (!Q.empty())
-        {
-            const_pointer u = Q.front();
-            Q.pop();
-
-            auto u_list_it = adjacency_list_.find(u);
-            if (u_list_it != adjacency_list_.end())
-            {
-                for (auto v : u_list_it->second)
-                {
-                    BFS_Node &v_info = bfs_info[v];
-                    if (v_info.color_ == BFS_Node::Color::white)
-                    {
-                        v_info.color_ = BFS_Node::Color::gray;
-                        v_info.distance_ = bfs_info[u].distance_ + 1;
-                        v_info.predecessor_ = u;
-                        Q.push(v);
-                    }
-                }
-            }
-        }
+        auto edges_it = adjacency_list_.find(it);
+        if (edges_it == adjacency_list_.end())
+            return std::nullopt;
+        else
+            return std::pair{edges_it->second.begin(), edges_it->second.end()};
     }
 
 private:
 
-    static pointer vertex_addr(iterator it) { return std::addressof(*it); }
-    static const_pointer vertex_addr(const_iterator it) { return std::addressof(*it); }
-
     vertex_cont vertices_;
-    std::unordered_map<const_pointer, std::unordered_set<const_pointer>> adjacency_list_;
+    std::unordered_map<const_iterator,
+                       edges_cont,
+                       iterator_hash> adjacency_list_;
+};
+
+template<typename T>
+class BFS final
+{
+    using graph_type = Directed_Graph<T>;
+    using vertex_iterator = typename graph_type::const_iterator;
+    using distance_type = std::optional<std::size_t>;
+    using hash_type = typename graph_type::iterator_hash;
+
+    enum class Color { white, gray };
+
+    struct BFS_Node_Tmp final
+    {
+        distance_type distance_;
+        vertex_iterator predecessor_;
+        Color color_{Color::white};
+
+        BFS_Node_Tmp(vertex_iterator default_predecessor) : predecessor_{default_predecessor} {}
+        BFS_Node_Tmp(std::size_t distance, Color color, vertex_iterator default_predecessor)
+                    : distance_{distance}, predecessor_{default_predecessor}, color_{color} {}
+    };
+
+    struct Comp final
+    {
+        bool operator()(distance_type lhs, distance_type rhs) const
+        {
+            if (!lhs)
+                return false;
+            else if (!rhs)
+                return true;
+            else
+                return *lhs < *rhs;
+        }
+    };
+
+
+    using info_table_type = std::unordered_map<vertex_iterator, BFS_Node_Tmp, hash_type>;
+
+public:
+
+    struct Node_Info final
+    {
+        vertex_iterator node_it_;
+        vertex_iterator predecessor_it_;
+    };
+
+    using table_type = std::multimap<distance_type, Node_Info, Comp>;
+    using iterator = typename table_type::iterator;
+    using const_iterator = typename table_type::const_iterator;
+
+    BFS(const graph_type &g, vertex_iterator source_it)
+    {
+        if (source_it == g.end())
+            return;
+
+        info_table_type bfs_info = bfs_init(g, source_it);
+
+        std::queue<vertex_iterator> Q;
+        Q.push(source_it);
+
+        while (!Q.empty())
+        {
+            vertex_iterator u_it = Q.front();
+            Q.pop();
+
+            auto adj = g.adjacent_vertices(u_it);
+            if (adj.has_value())
+            {
+                for (auto v_it : std::ranges::subrange(adj->first, adj->second))
+                {
+                    // we are sure that find() return a valid iterator
+                    BFS_Node_Tmp &v_info = bfs_info.find(v_it)->second;
+
+                    if (v_info.color_ == Color::white)
+                    {
+                        // we are sure that find() return a valid iterator
+                        BFS_Node_Tmp &u_info = bfs_info.find(u_it)->second;
+
+                        v_info.color_ = Color::gray;
+                        v_info.distance_ = *u_info.distance_ + 1;
+                        v_info.predecessor_ = u_it;
+                        Q.push(v_it);
+                    }
+                }
+            }
+        }
+
+        for (auto &elem : bfs_info)
+            bfs_table_.emplace(elem.second.distance_,
+                               Node_Info{elem.first, elem.second.predecessor_});
+    }
+
+    iterator begin() { return bfs_table_.begin(); }
+    const_iterator begin() const { return bfs_table_.begin(); }
+    const_iterator cbegin() const { return begin(); }
+
+    iterator end() { return bfs_table_.end(); }
+    const_iterator end() const { return bfs_table_.end(); }
+    const_iterator cend() const { return end(); }
+
+private:
+
+    info_table_type bfs_init(const graph_type &g, vertex_iterator source_it)
+    {
+        info_table_type bfs_info;
+        auto end = g.end();
+
+        for (auto it = g.begin(); it != source_it; ++it)
+            bfs_info.emplace(it, BFS_Node_Tmp{end});
+
+        bfs_info.emplace(source_it, BFS_Node_Tmp{0, Color::gray, end});
+
+        for (auto it = std::next(source_it), ite = g.end(); it != ite; ++it)
+            bfs_info.emplace(it, BFS_Node_Tmp{end});
+
+        return bfs_info;
+    }
+
+    table_type bfs_table_;
 };
 
 } // namespace graphs
