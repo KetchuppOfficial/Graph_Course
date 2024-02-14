@@ -226,7 +226,6 @@ class BFS final
         }
     };
 
-
     using info_table_type = std::unordered_map<vertex_iterator, Tmp_Node, hash_type>;
 
 public:
