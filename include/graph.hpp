@@ -202,15 +202,15 @@ class BFS final
 
     enum class Color { white, gray };
 
-    struct BFS_Node_Tmp final
+    struct Tmp_Node final
     {
         distance_type distance_;
         vertex_iterator predecessor_;
         Color color_{Color::white};
 
-        BFS_Node_Tmp(vertex_iterator default_predecessor) : predecessor_{default_predecessor} {}
-        BFS_Node_Tmp(std::size_t distance, Color color, vertex_iterator default_predecessor)
-                    : distance_{distance}, predecessor_{default_predecessor}, color_{color} {}
+        Tmp_Node(vertex_iterator default_predecessor) : predecessor_{default_predecessor} {}
+        Tmp_Node(std::size_t distance, Color color, vertex_iterator default_predecessor)
+                : distance_{distance}, predecessor_{default_predecessor}, color_{color} {}
     };
 
     struct Comp final
@@ -227,17 +227,17 @@ class BFS final
     };
 
 
-    using info_table_type = std::unordered_map<vertex_iterator, BFS_Node_Tmp, hash_type>;
+    using info_table_type = std::unordered_map<vertex_iterator, Tmp_Node, hash_type>;
 
 public:
 
-    struct Node_Info final
+    struct Info_Node final
     {
         vertex_iterator node_it_;
         vertex_iterator predecessor_it_;
     };
 
-    using table_type = std::multimap<distance_type, Node_Info, Comp>;
+    using table_type = std::multimap<distance_type, Info_Node, Comp>;
     using iterator = typename table_type::iterator;
     using const_iterator = typename table_type::const_iterator;
 
@@ -262,12 +262,12 @@ public:
                 for (auto v_it : std::ranges::subrange(adj->first, adj->second))
                 {
                     // we are sure that find() return a valid iterator
-                    BFS_Node_Tmp &v_info = bfs_info.find(v_it)->second;
+                    Tmp_Node &v_info = bfs_info.find(v_it)->second;
 
                     if (v_info.color_ == Color::white)
                     {
                         // we are sure that find() return a valid iterator
-                        BFS_Node_Tmp &u_info = bfs_info.find(u_it)->second;
+                        Tmp_Node &u_info = bfs_info.find(u_it)->second;
 
                         v_info.color_ = Color::gray;
                         v_info.distance_ = *u_info.distance_ + 1;
@@ -280,7 +280,7 @@ public:
 
         for (auto &elem : bfs_info)
             bfs_table_.emplace(elem.second.distance_,
-                               Node_Info{elem.first, elem.second.predecessor_});
+                               Info_Node{elem.first, elem.second.predecessor_});
     }
 
     iterator begin() { return bfs_table_.begin(); }
@@ -299,12 +299,12 @@ private:
         auto end = g.end();
 
         for (auto it = g.begin(); it != source_it; ++it)
-            bfs_info.emplace(it, BFS_Node_Tmp{end});
+            bfs_info.emplace(it, Tmp_Node{end});
 
-        bfs_info.emplace(source_it, BFS_Node_Tmp{0, Color::gray, end});
+        bfs_info.emplace(source_it, Tmp_Node{0, Color::gray, end});
 
         for (auto it = std::next(source_it), ite = g.end(); it != ite; ++it)
-            bfs_info.emplace(it, BFS_Node_Tmp{end});
+            bfs_info.emplace(it, Tmp_Node{end});
 
         return bfs_info;
     }
