@@ -1,1 +1,3 @@
-# Enjoying *Instroduction to Algorithms* by Thomas H. Cormen
+# Enjoying graphs with Thomas H. Cormen
+
+![dfs](https://user-images.githubusercontent.com/71986226/154510384-f02decea-a93b-4cb4-9633-a6aa5c87d198.gif)
