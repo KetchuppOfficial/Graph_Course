@@ -118,8 +118,7 @@ public:
     // O(V)
     void erase_vertex(const_reference v)
     {
-        auto it = find_vertex(v);
-        if (it != end())
+        if (auto it = find_vertex(v); it != end())
             erase_vertex(it);
     }
 
@@ -134,11 +133,9 @@ public:
     // O(V)
     void insert_edge(const_reference from, const_reference to)
     {
-        auto from_it = find_vertex(from);
-        if (from_it != end())
+        if (auto from_it = find_vertex(from); from_it != end())
         {
-            auto to_it = find_vertex(to);
-            if (to_it != end())
+            if (auto to_it = find_vertex(to); to_it != end())
                 insert_edge(from_it, to_it);
         }
     }
@@ -152,11 +149,9 @@ public:
     // O(V)
     void erase_edge(const_reference from, const_reference to)
     {
-        auto from_it = find_vertex(from);
-        if (from_it != end())
+        if (auto from_it = find_vertex(from); from_it != end())
         {
-            auto to_it = find_vertex(to);
-            if (to_it != end())
+            if (auto to_it = find_vertex(to); to_it != end())
                 erase_edge(from_it, to_it);
         }
     }
