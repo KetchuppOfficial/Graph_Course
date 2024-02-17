@@ -21,13 +21,6 @@
 namespace graphs
 {
 
-struct Unknown_Vertex : public std::invalid_argument
-{
-    Unknown_Vertex(const char *message = "Given vertex iterator doesn't "
-                                         "point to a vertex of this graph")
-                  : std::invalid_argument{message} {}
-};
-
 template<typename T>
 class Directed_Graph final
 {
@@ -53,7 +46,6 @@ private:
 
     using edges_cont = std::unordered_set<const_iterator, iterator_hash>;
     using edge_iterator = typename edges_cont::const_iterator;
-    using adjacency_range = std::pair<edge_iterator, edge_iterator>;
 
 public:
 
@@ -161,14 +153,8 @@ public:
     // O(1)
     bool are_adjacent(const_iterator from_it, const_iterator to_it) const
     {
-        auto edges_it = adjacency_list_.find(from_it);
-        if (edges_it == adjacency_list_.end())
-            return false;
-        else
-        {
-            auto &edges = edges_it->second;
-            return edges.find(to_it) != edges.end();
-        }
+        auto &edges = adjacency_list_.at(from_it);
+        return edges.find(to_it) != edges.end();
     }
 
     // O(V)
@@ -186,13 +172,10 @@ public:
     }
 
     // O(1)
-    std::optional<adjacency_range> adjacent_vertices(const_iterator it) const
+    std::pair<edge_iterator, edge_iterator> adjacent_vertices(const_iterator it) const
     {
-        auto edges_it = adjacency_list_.find(it);
-        if (edges_it == adjacency_list_.end())
-            return std::nullopt;
-        else
-            return std::pair{edges_it->second.begin(), edges_it->second.end()};
+        auto &edges = adjacency_list_.at(it);
+        return std::pair{edges.begin(), edges.end()};
     }
 
     // O(V)
@@ -205,14 +188,7 @@ public:
     }
 
     // O(1)
-    size_type vertex_out_degree(const_iterator it) const
-    {
-        auto edges_it = adjacency_list_.find(it);
-        if (edges_it == adjacency_list_.end())
-            throw Unknown_Vertex{};
-        else
-            return edges_it->second.size();
-    }
+    size_type vertex_out_degree(const_iterator it) const { return adjacency_list_.at(it).size(); }
 
     // O(V)
     size_type vertex_degree(const_iterator it) const
@@ -291,23 +267,21 @@ public:
             vertex_iterator u_it = Q.front();
             Q.pop();
 
-            if (auto adj = g.adjacent_vertices(u_it); adj.has_value())
+            auto [begin, end] = g.adjacent_vertices(u_it);
+            for (auto v_it : std::ranges::subrange(begin, end))
             {
-                for (auto v_it : std::ranges::subrange(adj->first, adj->second))
+                // we are sure that find() return a valid iterator; no need for at()
+                Info_Node &v_info = bfs_info.find(v_it)->second;
+
+                if (v_info.color_ == Color::white)
                 {
-                    // we are sure that find() return a valid iterator
-                    Info_Node &v_info = bfs_info.find(v_it)->second;
+                    // we are sure that find() return a valid iterator; no need for at()
+                    Info_Node &u_info = bfs_info.find(u_it)->second;
 
-                    if (v_info.color_ == Color::white)
-                    {
-                        // we are sure that find() return a valid iterator
-                        Info_Node &u_info = bfs_info.find(u_it)->second;
-
-                        v_info.color_ = Color::gray;
-                        v_info.distance_ = *u_info.distance_ + 1;
-                        v_info.predecessor_ = u_it;
-                        Q.push(v_it);
-                    }
+                    v_info.color_ = Color::gray;
+                    v_info.distance_ = *u_info.distance_ + 1;
+                    v_info.predecessor_ = u_it;
+                    Q.push(v_it);
                 }
             }
         }
@@ -394,22 +368,24 @@ public:
                 {
                     vertex_iterator u_it = stack.top();
 
-                    if (Info_Node &u_info = dfs_info.find(u_it)->second;
-                        u_info.color_ == Color::white)
+                    // we are sure that find() return a valid iterator; no need for at()
+                    Info_Node &u_info = dfs_info.find(u_it)->second;
+
+                    if (u_info.color_ == Color::white)
                     {
                         u_info.color_ = Color::gray;
                         u_info.dfs_node_.discovery_time_ = ++time;
 
-                        if (auto adj = g.adjacent_vertices(u_it); adj.has_value())
+                        auto [begin, end] = g.adjacent_vertices(u_it);
+                        for (auto v_it : std::ranges::subrange(begin, end))
                         {
-                            for (auto v_it : std::ranges::subrange(adj->first, adj->second))
+                            // we are sure that find() return a valid iterator; no need for at()
+                            Info_Node &v_info = dfs_info.find(v_it)->second;
+
+                            if (v_info.color_ == Color::white)
                             {
-                                if (Info_Node &v_info = dfs_info.find(v_it)->second;
-                                    v_info.color_ == Color::white)
-                                {
-                                    v_info.dfs_node_.predecessor_ = u_it;
-                                    stack.push(v_it);
-                                }
+                                v_info.dfs_node_.predecessor_ = u_it;
+                                stack.push(v_it);
                             }
                         }
                     }
