@@ -14,6 +14,8 @@
 #include <map>
 #include <utility>
 #include <bit>
+#include <stack>
+#include <vector>
 
 namespace graphs
 {
@@ -202,15 +204,15 @@ class BFS final
 
     enum class Color { white, gray };
 
-    struct Tmp_Node final
+    struct Info_Node final
     {
         distance_type distance_;
         vertex_iterator predecessor_;
         Color color_{Color::white};
 
-        Tmp_Node(vertex_iterator default_predecessor) : predecessor_{default_predecessor} {}
-        Tmp_Node(std::size_t distance, Color color, vertex_iterator default_predecessor)
-                : distance_{distance}, predecessor_{default_predecessor}, color_{color} {}
+        Info_Node(vertex_iterator default_predecessor) : predecessor_{default_predecessor} {}
+        Info_Node(std::size_t distance, Color color, vertex_iterator default_predecessor)
+                 : distance_{distance}, predecessor_{default_predecessor}, color_{color} {}
     };
 
     struct Comp final
@@ -226,17 +228,17 @@ class BFS final
         }
     };
 
-    using info_table_type = std::unordered_map<vertex_iterator, Tmp_Node, hash_type>;
+    using info_table_type = std::unordered_map<vertex_iterator, Info_Node, hash_type>;
 
 public:
 
-    struct Info_Node final
+    struct BFS_Node final
     {
         vertex_iterator node_it_;
         vertex_iterator predecessor_it_;
     };
 
-    using table_type = std::multimap<distance_type, Info_Node, Comp>;
+    using table_type = std::multimap<distance_type, BFS_Node, Comp>;
     using iterator = typename table_type::iterator;
     using const_iterator = typename table_type::const_iterator;
 
@@ -255,18 +257,17 @@ public:
             vertex_iterator u_it = Q.front();
             Q.pop();
 
-            auto adj = g.adjacent_vertices(u_it);
-            if (adj.has_value())
+            if (auto adj = g.adjacent_vertices(u_it); adj.has_value())
             {
                 for (auto v_it : std::ranges::subrange(adj->first, adj->second))
                 {
                     // we are sure that find() return a valid iterator
-                    Tmp_Node &v_info = bfs_info.find(v_it)->second;
+                    Info_Node &v_info = bfs_info.find(v_it)->second;
 
                     if (v_info.color_ == Color::white)
                     {
                         // we are sure that find() return a valid iterator
-                        Tmp_Node &u_info = bfs_info.find(u_it)->second;
+                        Info_Node &u_info = bfs_info.find(u_it)->second;
 
                         v_info.color_ = Color::gray;
                         v_info.distance_ = *u_info.distance_ + 1;
@@ -277,9 +278,8 @@ public:
             }
         }
 
-        for (auto &elem : bfs_info)
-            bfs_table_.emplace(elem.second.distance_,
-                               Info_Node{elem.first, elem.second.predecessor_});
+        for (auto &[vertex_it, info_node] : bfs_info)
+            bfs_table_.emplace(info_node.distance_, BFS_Node{vertex_it, info_node.predecessor_});
     }
 
     iterator begin() { return bfs_table_.begin(); }
@@ -295,20 +295,118 @@ private:
     info_table_type bfs_init(const graph_type &g, vertex_iterator source_it)
     {
         info_table_type bfs_info;
+        bfs_info.reserve(g.n_vertices());
+
         auto end = g.end();
 
         for (auto it = g.begin(); it != source_it; ++it)
-            bfs_info.emplace(it, Tmp_Node{end});
+            bfs_info.emplace(it, Info_Node{end});
 
-        bfs_info.emplace(source_it, Tmp_Node{0, Color::gray, end});
+        bfs_info.emplace(source_it, Info_Node{0, Color::gray, end});
 
-        for (auto it = std::next(source_it), ite = g.end(); it != ite; ++it)
-            bfs_info.emplace(it, Tmp_Node{end});
+        for (auto it = std::next(source_it); it != end; ++it)
+            bfs_info.emplace(it, Info_Node{end});
 
         return bfs_info;
     }
 
     table_type bfs_table_;
+};
+
+template<typename T>
+class DFS final
+{
+    using graph_type = Directed_Graph<T>;
+    using vertex_iterator = typename graph_type::const_iterator;
+    using hash_type = typename graph_type::iterator_hash;
+    using time_t = std::size_t;
+    using stack_type = std::stack<vertex_iterator, std::vector<vertex_iterator>>;
+
+    struct DFS_Node final
+    {
+        vertex_iterator predecessor_;
+        time_t discovery_time_;
+        time_t finished_time_;
+    };
+
+    enum class Color { white, gray, black };
+
+    struct Info_Node final
+    {
+        DFS_Node dfs_node_;
+        Color color_{Color::white};
+
+        Info_Node(vertex_iterator default_predecessor) : dfs_node_{default_predecessor} {}
+    };
+
+    using info_table_type = std::unordered_map<vertex_iterator, Info_Node, hash_type>;
+
+public:
+
+    DFS(const graph_type &g)
+    {
+        info_table_type dfs_info = dfs_init(g);
+        time_t time = 0;
+
+        // s_ stands for "source"
+        for (auto s_it = g.begin(), ite = g.end(); s_it != ite; ++s_it)
+        {
+            if (Info_Node &s_info = dfs_info.find(s_it)->second; s_info.color_ == Color::white)
+            {
+                stack_type stack;
+                stack.push(s_it);
+
+                while(!stack.empty())
+                {
+                    vertex_iterator u_it = stack.top();
+
+                    if (Info_Node &u_info = dfs_info.find(u_it)->second;
+                        u_info.color_ == Color::white)
+                    {
+                        u_info.color_ = Color::gray;
+                        u_info.dfs_node_.discovery_time_ = ++time;
+
+                        if (auto adj = g.adjacent_vertices(u_it); adj.has_value())
+                        {
+                            for (auto v_it : std::ranges::subrange(adj->first, adj->second))
+                            {
+                                if (Info_Node &v_info = dfs_info.find(v_it)->second;
+                                    v_info.color_ == Color::white)
+                                {
+                                    v_info.dfs_node_.predecessor_ = u_it;
+                                    stack.push(v_it);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        u_info.dfs_node_.finished_time_ = ++time;
+                        stack.pop();
+                    }
+                }
+            }
+        }
+
+        dfs_table_.reserve(dfs_info.size());
+        for (auto &[vertex_it, info_node] : dfs_info)
+            dfs_table_.emplace_back(info_node.dfs_node_);
+    }
+
+private:
+
+    info_table_type dfs_init(const graph_type &g)
+    {
+        info_table_type dfs_info;
+        dfs_info.reserve(g.n_vertices());
+
+        for (auto it = g.begin(), ite = g.end(); it != ite; ++it)
+            dfs_info.emplace(it, Info_Node{ite});
+
+        return dfs_info;
+    }
+
+    std::vector<DFS_Node> dfs_table_;
 };
 
 } // namespace graphs
