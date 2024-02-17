@@ -190,6 +190,7 @@ public:
         return are_adjacent(from_it, to_it);
     }
 
+    // O(1)
     std::optional<adjacency_range> adjacent_vertices(const_iterator it) const
     {
         auto edges_it = adjacency_list_.find(it);
