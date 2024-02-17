@@ -16,9 +16,17 @@
 #include <bit>
 #include <stack>
 #include <vector>
+#include <stdexcept>
 
 namespace graphs
 {
+
+struct Unknown_Vertex : public std::invalid_argument
+{
+    Unknown_Vertex(const char *message = "Given vertex iterator doesn't "
+                                         "point to a vertex of this graph")
+                  : std::invalid_argument{message} {}
+};
 
 template<typename T>
 class Directed_Graph final
@@ -54,6 +62,8 @@ public:
     Directed_Graph(std::initializer_list<vertex_type> il)
     {
         std::ranges::copy(il, std::back_inserter(vertices_));
+        for (auto it = begin(), ite = end(); it != ite; ++it)
+            adjacency_list_.emplace(it, edges_cont{});
     }
 
     Directed_Graph(const Directed_Graph &rhs) = delete;
@@ -91,8 +101,11 @@ public:
     // O(1)
     iterator insert_vertex(const_reference v)
     {
-        vertices_.emplace_back(v);
-        return std::prev(vertices_.end());
+        vertices_.emplace_front(v);
+        auto vertex_it = vertices_.begin();
+        adjacency_list_.emplace(vertex_it); // ensure that each node has an empty list of edges
+
+        return vertex_it;
     }
 
     // O(1)
@@ -184,6 +197,31 @@ public:
             return std::nullopt;
         else
             return std::pair{edges_it->second.begin(), edges_it->second.end()};
+    }
+
+    // O(V)
+    size_type vertex_in_degree(const_iterator it) const
+    {
+        return std::ranges::count_if(adjacency_list_, [it](auto &elem)
+        {
+            return elem.second.contains(it);
+        });
+    }
+
+    // O(1)
+    size_type vertex_out_degree(const_iterator it) const
+    {
+        auto edges_it = adjacency_list_.find(it);
+        if (edges_it == adjacency_list_.end())
+            throw Unknown_Vertex{};
+        else
+            return edges_it->second.size();
+    }
+
+    // O(V)
+    size_type vertex_degree(const_iterator it) const
+    {
+        return vertex_in_degree(it) + vertex_out_degree(it);
     }
 
 private:
