@@ -209,8 +209,19 @@ class BFS final
 {
     using graph_type = Directed_Graph<T>;
     using vertex_iterator = typename graph_type::const_iterator;
-    using distance_type = std::optional<std::size_t>;
     using hash_type = typename graph_type::iterator_hash;
+
+public:
+
+    using distance_type = std::optional<std::size_t>;
+
+    struct BFS_Node final
+    {
+        vertex_iterator node_it_;
+        vertex_iterator predecessor_it_;
+    };
+
+private:
 
     enum class Color { white, gray };
 
@@ -222,7 +233,9 @@ class BFS final
 
         Info_Node(vertex_iterator default_predecessor) : predecessor_{default_predecessor} {}
         Info_Node(std::size_t distance, Color color, vertex_iterator default_predecessor)
-                 : distance_{distance}, predecessor_{default_predecessor}, color_{color} {}
+                 : distance_{distance},
+                   predecessor_{default_predecessor},
+                   color_{color} {}
     };
 
     struct Comp final
@@ -239,16 +252,10 @@ class BFS final
     };
 
     using info_table_type = std::unordered_map<vertex_iterator, Info_Node, hash_type>;
+    using table_type = std::multimap<distance_type, BFS_Node, Comp>;
 
 public:
 
-    struct BFS_Node final
-    {
-        vertex_iterator node_it_;
-        vertex_iterator predecessor_it_;
-    };
-
-    using table_type = std::multimap<distance_type, BFS_Node, Comp>;
     using iterator = typename table_type::iterator;
     using const_iterator = typename table_type::const_iterator;
 
@@ -327,8 +334,11 @@ class DFS final
     using graph_type = Directed_Graph<T>;
     using vertex_iterator = typename graph_type::const_iterator;
     using hash_type = typename graph_type::iterator_hash;
-    using time_t = std::size_t;
     using stack_type = std::stack<vertex_iterator, std::vector<vertex_iterator>>;
+
+public:
+
+    using time_t = std::size_t;
 
     struct DFS_Node final
     {
@@ -336,6 +346,8 @@ class DFS final
         time_t discovery_time_;
         time_t finished_time_;
     };
+
+private:
 
     enum class Color { white, gray };
 
@@ -348,8 +360,12 @@ class DFS final
     };
 
     using info_table_type = std::unordered_map<vertex_iterator, Info_Node, hash_type>;
+    using table_type = std::unordered_map<vertex_iterator, DFS_Node, hash_type>;
 
 public:
+
+    using iterator = typename table_type::iterator;
+    using const_iterator = typename table_type::iterator;
 
     DFS(const graph_type &g)
     {
@@ -359,7 +375,10 @@ public:
         // s_ stands for "source"
         for (auto s_it = g.begin(), ite = g.end(); s_it != ite; ++s_it)
         {
-            if (Info_Node &s_info = dfs_info.find(s_it)->second; s_info.color_ == Color::white)
+            // we are sure that find() return a valid iterator; no need for at()
+            Info_Node &s_info = dfs_info.find(s_it)->second;
+
+            if (s_info.color_ == Color::white)
             {
                 stack_type stack;
                 stack.push(s_it);
@@ -400,8 +419,16 @@ public:
 
         dfs_table_.reserve(dfs_info.size());
         for (auto &[vertex_it, info_node] : dfs_info)
-            dfs_table_.emplace_back(info_node.dfs_node_);
+            dfs_table_.emplace(vertex_it, info_node.dfs_node_);
     }
+
+    iterator begin() { return dfs_table_.begin(); }
+    const_iterator begin() const { return dfs_table_.begin(); }
+    const_iterator cbegin() const { return begin(); }
+
+    iterator end() { return dfs_table_.end(); }
+    const_iterator end() const { return dfs_table_.end(); }
+    const_iterator cend() const { return end(); }
 
 private:
 
@@ -416,7 +443,7 @@ private:
         return dfs_info;
     }
 
-    std::vector<DFS_Node> dfs_table_;
+    table_type dfs_table_;
 };
 
 } // namespace graphs
