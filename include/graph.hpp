@@ -16,7 +16,6 @@
 #include <bit>
 #include <stack>
 #include <vector>
-#include <stdexcept>
 
 namespace graphs
 {
