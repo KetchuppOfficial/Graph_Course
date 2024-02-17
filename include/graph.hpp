@@ -329,7 +329,7 @@ class DFS final
         time_t finished_time_;
     };
 
-    enum class Color { white, gray, black };
+    enum class Color { white, gray };
 
     struct Info_Node final
     {
