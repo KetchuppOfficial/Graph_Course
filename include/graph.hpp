@@ -16,6 +16,7 @@
 #include <bit>
 #include <stack>
 #include <vector>
+#include <ostream>
 
 namespace graphs
 {
@@ -193,6 +194,26 @@ public:
     size_type vertex_degree(const_iterator it) const
     {
         return vertex_in_degree(it) + vertex_out_degree(it);
+    }
+
+    // graphic dump in dot format
+
+    void graphic_dump(std::ostream &os)
+    {
+        os << "digraph G\n"
+              "{\n";
+
+        for (auto &node : vertices_)
+            os << "    node_" << std::addressof(node) << " [label = \"" << node << "\"];\n";
+
+        os << '\n';
+
+        for (auto &[from_it, edges] : adjacency_list_)
+            for (auto to_it : edges)
+                os << "    node_" << std::addressof(*from_it)
+                   << " -> node_" << std::addressof(*to_it) << ";\n";
+
+        os << "}\n";
     }
 
 private:
