@@ -362,7 +362,7 @@ public:
 
     struct DFS_Node final
     {
-        vertex_iterator predecessor_;
+        std::optional<vertex_iterator> predecessor_;
         time_t discovery_time_;
         time_t finished_time_;
     };
@@ -375,8 +375,6 @@ private:
     {
         DFS_Node dfs_node_;
         Color color_{Color::white};
-
-        Info_Node(vertex_iterator default_predecessor) : dfs_node_{default_predecessor} {}
     };
 
     using info_table_type = std::unordered_map<vertex_iterator, Info_Node, hash_type>;
@@ -442,6 +440,26 @@ public:
             dfs_table_.emplace(vertex_it, info_node.dfs_node_);
     }
 
+    void graphic_dump(std::ostream &os)
+    {
+        os << "digraph G\n"
+              "{\n";
+
+        for (auto &[vertex_it, dfs_info] : dfs_table_)
+            os << "    node_" << std::addressof(*vertex_it) << " [shape = record, label = \"key: "
+               << *vertex_it << " | " << dfs_info.discovery_time_ << '/' << dfs_info.finished_time_
+               << "\"];\n";
+
+        os << '\n';
+
+        for (auto &[vertex_it, dfs_info] : dfs_table_)
+            if (dfs_info.predecessor_.has_value())
+                os << "    node_" << std::addressof(*dfs_info.predecessor_.value())
+                   << " -> node_" << std::addressof(*vertex_it) << ";\n";
+
+        os << "}\n";
+    }
+
     iterator begin() { return dfs_table_.begin(); }
     const_iterator begin() const { return dfs_table_.begin(); }
     const_iterator cbegin() const { return begin(); }
@@ -458,7 +476,7 @@ private:
         dfs_info.reserve(g.n_vertices());
 
         for (auto it = g.begin(), ite = g.end(); it != ite; ++it)
-            dfs_info.emplace(it, Info_Node{ite});
+            dfs_info.emplace(it, Info_Node{});
 
         return dfs_info;
     }
