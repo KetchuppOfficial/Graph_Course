@@ -132,6 +132,13 @@ public:
         }
     }
 
+    // O(il.size())
+    void insert_edges(std::initializer_list<std::pair<const_iterator, const_iterator>> il)
+    {
+        for (auto [from, to] : il)
+            insert_edge(from, to);
+    }
+
     // O(1)
     void erase_edge(const_iterator from_it, const_iterator to_it)
     {
