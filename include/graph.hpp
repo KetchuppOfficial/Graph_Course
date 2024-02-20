@@ -83,13 +83,6 @@ public:
 
     // Operations on vertices
 
-    // O(V)
-    iterator find_vertex(const_reference v) { return std::ranges::find(vertices_, v); }
-    const_iterator find_vertex(const_reference v) const { return std::ranges::find(vertices_, v); }
-
-    // O(V)
-    bool contains(const_reference v) const { return find_vertex(v) != end(); }
-
     // O(1)
     iterator insert_vertex(const_reference v)
     {
