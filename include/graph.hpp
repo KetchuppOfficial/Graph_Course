@@ -107,29 +107,12 @@ public:
         vertices_.erase(it);
     }
 
-    // O(V)
-    void erase_vertex(const_reference v)
-    {
-        if (auto it = find_vertex(v); it != end())
-            erase_vertex(it);
-    }
-
     // Operations on edges
 
     // O(1)
     void insert_edge(const_iterator from_it, const_iterator to_it)
     {
         adjacency_list_[from_it].insert(to_it);
-    }
-
-    // O(V)
-    void insert_edge(const_reference from, const_reference to)
-    {
-        if (auto from_it = find_vertex(from); from_it != end())
-        {
-            if (auto to_it = find_vertex(to); to_it != end())
-                insert_edge(from_it, to_it);
-        }
     }
 
     // O(il.size())
@@ -145,16 +128,6 @@ public:
         adjacency_list_[from_it].erase(to_it);
     }
 
-    // O(V)
-    void erase_edge(const_reference from, const_reference to)
-    {
-        if (auto from_it = find_vertex(from); from_it != end())
-        {
-            if (auto to_it = find_vertex(to); to_it != end())
-                erase_edge(from_it, to_it);
-        }
-    }
-
     // Mixed operations
 
     // O(1)
@@ -162,20 +135,6 @@ public:
     {
         auto &edges = adjacency_list_.at(from_it);
         return edges.find(to_it) != edges.end();
-    }
-
-    // O(V)
-    bool are_adjacent(const_reference from, const_reference to) const
-    {
-        auto from_it = find_vertex(from);
-        if (from_it == end())
-            return false;
-
-        auto to_it = find_vertex(to);
-        if (to_it == end())
-            return false;
-
-        return are_adjacent(from_it, to_it);
     }
 
     // O(1)
