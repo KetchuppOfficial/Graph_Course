@@ -88,7 +88,7 @@ public:
     {
         vertices_.emplace_front(v);
         auto vertex_it = vertices_.begin();
-        adjacency_list_.emplace(vertex_it); // ensure that each node has an empty list of edges
+        adjacency_list_.emplace(vertex_it, edges_cont{});
 
         return vertex_it;
     }
