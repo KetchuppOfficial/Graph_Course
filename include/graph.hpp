@@ -230,20 +230,16 @@ private:
         }
     };
 
-    using info_table_type = std::unordered_map<vertex_iterator, Info_Node, hash_type>;
     using table_type = std::multimap<distance_type, BFS_Node, Comp>;
 
 public:
-
-    using iterator = typename table_type::iterator;
-    using const_iterator = typename table_type::const_iterator;
 
     BFS(const graph_type &g, vertex_iterator source_it)
     {
         if (source_it == g.end())
             return;
 
-        info_table_type bfs_info = bfs_init(g, source_it);
+        auto bfs_info = bfs_init(g, source_it);
 
         std::queue<vertex_iterator> Q;
         Q.push(source_it);
@@ -276,6 +272,9 @@ public:
             bfs_table_.emplace(info_node.distance_, BFS_Node{vertex_it, info_node.predecessor_});
     }
 
+    using iterator = typename table_type::iterator;
+    using const_iterator = typename table_type::const_iterator;
+
     iterator begin() { return bfs_table_.begin(); }
     const_iterator begin() const { return bfs_table_.begin(); }
     const_iterator cbegin() const { return begin(); }
@@ -285,6 +284,8 @@ public:
     const_iterator cend() const { return end(); }
 
 private:
+
+    using info_table_type = std::unordered_map<vertex_iterator, Info_Node, hash_type>;
 
     info_table_type bfs_init(const graph_type &g, vertex_iterator source_it)
     {
@@ -317,13 +318,13 @@ class DFS final
 
 public:
 
-    using time_t = std::size_t;
+    using time_type = std::size_t;
 
     struct DFS_Node final
     {
         std::optional<vertex_iterator> predecessor_;
-        time_t discovery_time_;
-        time_t finished_time_;
+        time_type discovery_time_;
+        time_type finished_time_;
     };
 
 private:
@@ -336,7 +337,6 @@ private:
         Color color_{Color::white};
     };
 
-    using info_table_type = std::unordered_map<vertex_iterator, Info_Node, hash_type>;
     using table_type = std::unordered_map<vertex_iterator, DFS_Node, hash_type>;
 
 public:
@@ -346,8 +346,8 @@ public:
 
     DFS(const graph_type &g)
     {
-        info_table_type dfs_info = dfs_init(g);
-        time_t time = 0;
+        auto dfs_info = dfs_init(g);
+        time_type time = 0;
 
         // s_ stands for "source"
         for (auto s_it = g.begin(), ite = g.end(); s_it != ite; ++s_it)
@@ -428,6 +428,8 @@ public:
     const_iterator cend() const { return end(); }
 
 private:
+
+    using info_table_type = std::unordered_map<vertex_iterator, Info_Node, hash_type>;
 
     info_table_type dfs_init(const graph_type &g)
     {
