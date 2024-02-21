@@ -92,9 +92,12 @@ public:
         return vertex_it;
     }
 
-    // O(1)
+    // O(V)
     void erase_vertex(const_iterator it)
     {
+        for (auto &elem : adjacency_list_)
+            elem.second.erase(it);
+
         adjacency_list_.erase(it);
         vertices_.erase(it);
     }
