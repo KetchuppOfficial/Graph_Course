@@ -13,6 +13,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include "graph_traits.hpp"
+
 namespace graphs
 {
 
@@ -40,7 +42,6 @@ public:
 private:
 
     using edges_cont = std::unordered_set<const_iterator, iterator_hash>;
-    using edge_iterator = typename edges_cont::const_iterator;
 
 public:
 
@@ -125,6 +126,8 @@ public:
         return edges.find(to_it) != edges.end();
     }
 
+    using edge_iterator = typename edges_cont::const_iterator;
+
     // O(1)
     std::pair<edge_iterator, edge_iterator> adjacent_vertices(const_iterator it) const
     {
@@ -176,6 +179,25 @@ private:
     std::unordered_map<const_iterator,
                        edges_cont,
                        iterator_hash> adjacency_list_;
+};
+
+template<typename T>
+struct graph_traits<Directed_Graph<T>>
+{
+    using size_type = typename Directed_Graph<T>::size_type;
+    using vertex_type = T;
+    using vertex_iterator = typename Directed_Graph<T>::const_iterator;
+    using edge_iterator = typename Directed_Graph<T>::edge_iterator;
+
+    static size_type n_edges(const Directed_Graph<T> &g) { return g.n_edges(); }
+    static size_type n_vertices(const Directed_Graph<T> &g) { return g.n_vertices(); }
+
+    static auto adjacent_vertices(const Directed_Graph<T> &g, vertex_iterator it)
+           -> std::pair<edge_iterator, edge_iterator>
+    {
+        return g.adjacent_vertices(it);
+    }
+
 };
 
 } // namespace graphs

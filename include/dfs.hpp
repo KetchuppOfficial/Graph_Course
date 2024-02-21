@@ -1,26 +1,35 @@
 #ifndef INCLUDE_DFS_HPP
 #define INCLUDE_DFS_HPP
 
+#include <ranges>
 #include <stack>
 #include <vector>
+#include <bit>
 #include <optional>
 #include <unordered_map>
-#include <ranges>
 #include <ostream>
 #include <memory>
 
-#include "graph.hpp"
+#include "graph_traits.hpp"
 
 namespace graphs
 {
 
-template<typename T>
+template<typename G> // G stands for "graph"
+requires std::ranges::forward_range<G>
 class DFS final
 {
-    using graph_type = Directed_Graph<T>;
-    using vertex_iterator = typename graph_type::const_iterator;
-    using hash_type = typename graph_type::iterator_hash;
+    using graph_type = G;
+    using vertex_iterator = typename graph_traits<G>::vertex_iterator;
     using stack_type = std::stack<vertex_iterator, std::vector<vertex_iterator>>;
+
+    struct iterator_hash final
+    {
+        std::size_t operator()(vertex_iterator it) const noexcept
+        {
+            return std::bit_cast<std::size_t>(it);
+        }
+    };
 
 public:
 
@@ -43,7 +52,7 @@ private:
         Color color_{Color::white};
     };
 
-    using table_type = std::unordered_map<vertex_iterator, DFS_Node, hash_type>;
+    using table_type = std::unordered_map<vertex_iterator, DFS_Node, iterator_hash>;
 
 public:
 
@@ -56,7 +65,7 @@ public:
         time_type time = 0;
 
         // s_ stands for "source"
-        for (auto s_it = g.begin(), ite = g.end(); s_it != ite; ++s_it)
+        for (auto s_it = std::ranges::begin(g), ite = std::ranges::end(g); s_it != ite; ++s_it)
         {
             // we are sure that find() return a valid iterator; no need for at()
             Info_Node &s_info = dfs_info.find(s_it)->second;
@@ -78,7 +87,7 @@ public:
                         u_info.color_ = Color::gray;
                         u_info.dfs_node_.discovery_time_ = ++time;
 
-                        auto [begin, end] = g.adjacent_vertices(u_it);
+                        auto [begin, end] = graph_traits<G>::adjacent_vertices(g, u_it);
                         for (auto v_it : std::ranges::subrange(begin, end))
                         {
                             // we are sure that find() return a valid iterator; no need for at()
@@ -135,14 +144,14 @@ public:
 
 private:
 
-    using info_table_type = std::unordered_map<vertex_iterator, Info_Node, hash_type>;
+    using info_table_type = std::unordered_map<vertex_iterator, Info_Node, iterator_hash>;
 
     info_table_type dfs_init(const graph_type &g)
     {
         info_table_type dfs_info;
-        dfs_info.reserve(g.n_vertices());
+        dfs_info.reserve(graph_traits<G>::n_vertices(g));
 
-        for (auto it = g.begin(), ite = g.end(); it != ite; ++it)
+        for (auto it = std::ranges::begin(g), ite = std::ranges::end(g); it != ite; ++it)
             dfs_info.emplace(it, Info_Node{});
 
         return dfs_info;

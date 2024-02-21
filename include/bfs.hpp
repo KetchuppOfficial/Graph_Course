@@ -1,24 +1,32 @@
 #ifndef INCLUDE_BFS_HPP
 #define INCLUDE_BFS_HPP
 
+#include <ranges>
+#include <bit>
 #include <optional>
 #include <map>
 #include <queue>
-#include <ranges>
 #include <unordered_map>
 #include <iterator>
 
-#include "graph.hpp"
+#include "graph_traits.hpp"
 
 namespace graphs
 {
 
-template<typename T>
+template<typename G> // G stands for "graph"
+requires std::ranges::forward_range<G>
 class BFS final
 {
-    using graph_type = Directed_Graph<T>;
-    using vertex_iterator = typename graph_type::const_iterator;
-    using hash_type = typename graph_type::iterator_hash;
+    using graph_type = G;
+    using vertex_iterator = typename graph_traits<G>::vertex_iterator;
+    struct iterator_hash final
+    {
+        std::size_t operator()(vertex_iterator it) const noexcept
+        {
+            return std::bit_cast<std::size_t>(it);
+        }
+    };
 
 public:
 
@@ -66,7 +74,7 @@ public:
 
     BFS(const graph_type &g, vertex_iterator source_it)
     {
-        if (source_it == g.end())
+        if (source_it == std::ranges::end(g))
             return;
 
         auto bfs_info = bfs_init(g, source_it);
@@ -79,7 +87,7 @@ public:
             vertex_iterator u_it = Q.front();
             Q.pop();
 
-            auto [begin, end] = g.adjacent_vertices(u_it);
+            auto [begin, end] = graph_traits<G>::adjacent_vertices(g, u_it);
             for (auto v_it : std::ranges::subrange(begin, end))
             {
                 // we are sure that find() return a valid iterator; no need for at()
@@ -115,16 +123,16 @@ public:
 
 private:
 
-    using info_table_type = std::unordered_map<vertex_iterator, Info_Node, hash_type>;
+    using info_table_type = std::unordered_map<vertex_iterator, Info_Node, iterator_hash>;
 
     info_table_type bfs_init(const graph_type &g, vertex_iterator source_it)
     {
         info_table_type bfs_info;
-        bfs_info.reserve(g.n_vertices());
+        bfs_info.reserve(graph_traits<G>::n_vertices(g));
 
-        auto end = g.end();
+        auto end = std::ranges::end(g);
 
-        for (auto it = g.begin(); it != source_it; ++it)
+        for (auto it = std::ranges::begin(g); it != source_it; ++it)
             bfs_info.emplace(it, Info_Node{end});
 
         bfs_info.emplace(source_it, Info_Node{0, Color::gray, end});
