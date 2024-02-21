@@ -86,8 +86,8 @@ public:
     // O(1)
     iterator insert_vertex(const_reference v)
     {
-        vertices_.emplace_front(v);
-        auto vertex_it = vertices_.begin();
+        vertices_.emplace_back(v);
+        auto vertex_it = std::prev(vertices_.end());
         adjacency_list_.emplace(vertex_it, edges_cont{});
 
         return vertex_it;
