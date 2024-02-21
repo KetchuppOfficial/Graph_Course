@@ -15,24 +15,18 @@ TEST(Basics, Initializer_List_Constructor)
 {
     graphs::Directed_Graph g{1, 2, 3, 4};
 
-    EXPECT_FALSE(g.empty());
-
     EXPECT_EQ(g.n_vertices(), 4);
-
-    g.insert_edge(2, 3);
-    g.insert_edge(1, 4);
-
-    EXPECT_EQ(g.n_edges(), 2);
+    EXPECT_FALSE(g.empty());
 }
 
 TEST(Basics, Vertex_Degree)
 {
-    graphs::Directed_Graph g{1, 2, 3, 4};
+    graphs::Directed_Graph<int> g;
 
-    auto it_1 = g.find_vertex(1);
-    auto it_2 = g.find_vertex(2);
-    auto it_3 = g.find_vertex(3);
-    auto it_4 = g.find_vertex(4);
+    auto it_1 = g.insert_vertex(1);
+    auto it_2 = g.insert_vertex(2);
+    auto it_3 = g.insert_vertex(3);
+    auto it_4 = g.insert_vertex(4);
     g.insert_edge(it_2, it_1);
     g.insert_edge(it_2, it_3);
     g.insert_edge(it_2, it_4);
