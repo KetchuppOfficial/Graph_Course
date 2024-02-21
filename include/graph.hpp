@@ -18,6 +18,9 @@
 namespace graphs
 {
 
+// Note: the order of vertices is preserved; all new nodes are inserted at the end of graph's
+//       internal container of vertices.
+
 template<typename T>
 class Directed_Graph final
 {
