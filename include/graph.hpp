@@ -72,6 +72,12 @@ public:
 
     bool empty() const { return n_vertices() == 0; }
 
+    void clear()
+    {
+        vertices_.clear();
+        adjacency_list_.clear();
+    }
+
     iterator begin() { return vertices_.begin(); }
     const_iterator begin() const { return vertices_.begin(); }
     const_iterator cbegin() const { return begin(); }
