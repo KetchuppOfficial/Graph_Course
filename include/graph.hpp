@@ -208,7 +208,6 @@ struct graph_traits<Directed_Graph<T>>
     {
         return g.adjacent_vertices(it);
     }
-
 };
 
 } // namespace graphs
