@@ -43,14 +43,46 @@ TEST(Graph, Insert_Vertex)
     EXPECT_TRUE(std::ranges::equal(g, list)); // check that the order of vertices is preserved
 }
 
-// TODO: insert_edge, insert_edges and are_adjacent should be tested here
+TEST(Graph, Insert_Edge)
+{
+    graphs::Directed_Graph<int> g;
+    auto it_1 = g.insert_vertex(1);
+    auto it_2 = g.insert_vertex(2);
+    auto it_3 = g.insert_vertex(3);
+
+    g.insert_edge(it_1, it_2);
+    g.insert_edge(it_2, it_3);
+
+    EXPECT_EQ(g.n_edges(), 2);
+
+    EXPECT_FALSE(g.are_adjacent(it_1, it_1));
+    EXPECT_TRUE(g.are_adjacent(it_1, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_1, it_3));
+
+    EXPECT_FALSE(g.are_adjacent(it_2, it_1));
+    EXPECT_FALSE(g.are_adjacent(it_2, it_2));
+    EXPECT_TRUE(g.are_adjacent(it_2, it_3));
+
+    EXPECT_FALSE(g.are_adjacent(it_3, it_1));
+    EXPECT_FALSE(g.are_adjacent(it_3, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_3, it_3));
+
+    graphs::Directed_Graph<int> g2{0};
+    g2.insert_edge(g2.begin(), g2.begin());
+
+    EXPECT_EQ(g2.n_edges(), 1);
+    EXPECT_TRUE(g2.are_adjacent(g2.begin(), g2.begin()));
+}
 
 /*
  *       +-- 1 --+
  *       |   ^    |
  *  2 <--+   |    +--> 3
  *  |        |
- *  +------> 4
+ *  +------> 4 --+
+ *           ^   |
+ *           |   |
+ *           +---+
  */
 TEST(Graph, Erase_Vertex)
 {
@@ -60,33 +92,47 @@ TEST(Graph, Erase_Vertex)
     auto it_3 = std::next(it_2);
     auto it_4 = std::next(it_3);
 
-    g.insert_edges({{it_1, it_2}, {it_1, it_3}, {it_2, it_4}, {it_4, it_1}});
+    g.insert_edges({{it_1, it_2}, {it_1, it_3}, {it_2, it_4}, {it_4, it_1}, {it_4, it_4}});
 
     EXPECT_EQ(g.n_vertices(), 4);
-    EXPECT_EQ(g.n_edges(), 4);
+    EXPECT_EQ(g.n_edges(), 5);
+
+    EXPECT_FALSE(g.are_adjacent(it_1, it_1));
     EXPECT_TRUE(g.are_adjacent(it_1, it_2));
     EXPECT_TRUE(g.are_adjacent(it_1, it_3));
-    EXPECT_TRUE(g.are_adjacent(it_2, it_4));
-    EXPECT_TRUE(g.are_adjacent(it_4, it_1));
     EXPECT_FALSE(g.are_adjacent(it_1, it_4));
+
     EXPECT_FALSE(g.are_adjacent(it_2, it_1));
+    EXPECT_FALSE(g.are_adjacent(it_2, it_2));
     EXPECT_FALSE(g.are_adjacent(it_2, it_3));
+    EXPECT_TRUE(g.are_adjacent(it_2, it_4));
+
     EXPECT_FALSE(g.are_adjacent(it_3, it_1));
     EXPECT_FALSE(g.are_adjacent(it_3, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_3, it_3));
     EXPECT_FALSE(g.are_adjacent(it_3, it_4));
+
+    EXPECT_TRUE(g.are_adjacent(it_4, it_1));
     EXPECT_FALSE(g.are_adjacent(it_4, it_2));
     EXPECT_FALSE(g.are_adjacent(it_4, it_3));
+    EXPECT_TRUE(g.are_adjacent(it_4, it_4));
 
-    g.erase_vertex(it_2);
+    g.erase_vertex(it_4);
 
     EXPECT_EQ(g.n_vertices(), 3);
     EXPECT_EQ(g.n_edges(), 2);
+
+    EXPECT_FALSE(g.are_adjacent(it_1, it_1));
+    EXPECT_TRUE(g.are_adjacent(it_1, it_2));
     EXPECT_TRUE(g.are_adjacent(it_1, it_3));
-    EXPECT_TRUE(g.are_adjacent(it_4, it_1));
-    EXPECT_FALSE(g.are_adjacent(it_1, it_4));
+
+    EXPECT_FALSE(g.are_adjacent(it_2, it_1));
+    EXPECT_FALSE(g.are_adjacent(it_2, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_2, it_4));
+
     EXPECT_FALSE(g.are_adjacent(it_3, it_1));
-    EXPECT_FALSE(g.are_adjacent(it_3, it_4));
-    EXPECT_FALSE(g.are_adjacent(it_4, it_3));
+    EXPECT_FALSE(g.are_adjacent(it_3, it_3));
+    EXPECT_FALSE(g.are_adjacent(it_3, it_3));
 }
 
 /*
