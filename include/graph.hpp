@@ -134,8 +134,7 @@ public:
     // O(1)
     bool are_adjacent(const_iterator from_it, const_iterator to_it) const
     {
-        auto &edges = adjacency_list_.at(from_it);
-        return edges.find(to_it) != edges.end();
+        return adjacency_list_.at(from_it).contains(to_it);
     }
 
     using edge_iterator = typename edges_cont::const_iterator;
