@@ -15,11 +15,12 @@
 namespace graphs
 {
 
+struct recursive final {}; // a tag to be used if you want to run dfs recursively
+
 template<typename G> // G stands for "graph"
 requires std::ranges::forward_range<G>
 class DFS final
 {
-    using graph_type = G;
     using vertex_iterator = typename graph_traits<G>::vertex_iterator;
     using stack_type = std::stack<vertex_iterator, std::vector<vertex_iterator>>;
 
@@ -59,7 +60,7 @@ public:
     using iterator = typename table_type::iterator;
     using const_iterator = typename table_type::iterator;
 
-    DFS(const graph_type &g)
+    DFS(const G &g)
     {
         auto dfs_info = dfs_init(g);
         time_type time = 0;
@@ -67,7 +68,7 @@ public:
         // s_ stands for "source"
         for (auto s_it = std::ranges::begin(g), ite = std::ranges::end(g); s_it != ite; ++s_it)
         {
-            // we are sure that find() return a valid iterator; no need for at()
+            // we are sure that find() returns a valid iterator; no need for at()
             Info_Node &s_info = dfs_info.find(s_it)->second;
 
             if (s_info.color_ == Color::white)
@@ -90,7 +91,7 @@ public:
                         auto [begin, end] = graph_traits<G>::adjacent_vertices(g, u_it);
                         for (auto v_it : std::ranges::subrange(begin, end))
                         {
-                            // we are sure that find() return a valid iterator; no need for at()
+                            // we are sure that find() returns a valid iterator; no need for at()
                             Info_Node &v_info = dfs_info.find(v_it)->second;
 
                             if (v_info.color_ == Color::white)
@@ -109,9 +110,24 @@ public:
             }
         }
 
-        dfs_table_.reserve(dfs_info.size());
-        for (auto &[vertex_it, info_node] : dfs_info)
-            dfs_table_.emplace(vertex_it, info_node.dfs_node_);
+        fill_dfs_table(dfs_info);
+    }
+
+    DFS(const G &g, recursive)
+    {
+        auto dfs_info = dfs_init(g);
+        time_type time = 0;
+
+        for (auto s_it = std::ranges::begin(g), ite = std::ranges::end(g); s_it != ite; ++s_it)
+        {
+            // we are sure that find() returns a valid iterator; no need for at()
+            Info_Node &s_info = dfs_info.find(s_it)->second;
+
+            if (s_info.color_ == Color::white)
+                time = visit(g, s_it, dfs_info, time);
+        }
+
+        fill_dfs_table(dfs_info);
     }
 
     void graphic_dump(std::ostream &os)
@@ -146,7 +162,7 @@ private:
 
     using info_table_type = std::unordered_map<vertex_iterator, Info_Node, iterator_hash>;
 
-    info_table_type dfs_init(const graph_type &g)
+    info_table_type dfs_init(const G &g)
     {
         info_table_type dfs_info;
         dfs_info.reserve(graph_traits<G>::n_vertices(g));
@@ -155,6 +171,40 @@ private:
             dfs_info.emplace(it, Info_Node{});
 
         return dfs_info;
+    }
+
+    void fill_dfs_table(const info_table_type &dfs_info)
+    {
+        dfs_table_.reserve(dfs_info.size());
+        for (auto &[vertex_it, info_node] : dfs_info)
+            dfs_table_.emplace(vertex_it, info_node.dfs_node_);
+    }
+
+    static time_type visit(const G& g, vertex_iterator u_it,
+                           info_table_type &dfs_info, time_type time)
+    {
+        // we are sure that find() returns a valid iterator; no need for at()
+        Info_Node &u_info = dfs_info.find(u_it)->second;
+
+        u_info.dfs_node_.discovery_time_ = ++time;
+        u_info.color_ = Color::gray;
+
+        auto [begin, end] = graph_traits<G>::adjacent_vertices(g, u_it);
+        for (auto v_it : std::ranges::subrange(begin, end))
+        {
+            // we are sure that find() returns a valid iterator; no need for at()
+            Info_Node &v_info = dfs_info.find(v_it)->second;
+
+            if (v_info.color_ == Color::white)
+            {
+                v_info.dfs_node_.predecessor_ = u_it;
+                time = visit(g, v_it, dfs_info, time);
+            }
+        }
+
+        u_info.dfs_node_.finished_time_ = ++time;
+
+        return time;
     }
 
     table_type dfs_table_;
