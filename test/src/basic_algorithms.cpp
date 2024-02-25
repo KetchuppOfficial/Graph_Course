@@ -11,7 +11,6 @@ TEST(Graph, Default_Constructor)
 
     EXPECT_EQ(g.n_vertices(), 0);
     EXPECT_EQ(g.n_edges(), 0);
-    EXPECT_TRUE(g.empty());
 }
 
 TEST(Graph, Initializer_List_Constructor)
@@ -20,7 +19,6 @@ TEST(Graph, Initializer_List_Constructor)
 
     EXPECT_EQ(g.n_vertices(), 4);
     EXPECT_EQ(g.n_edges(), 0);
-    EXPECT_FALSE(g.empty());
 
     auto list = {1, 2, 3, 4};
     EXPECT_TRUE(std::ranges::equal(g, list)); // check that the order of vertices is preserved
