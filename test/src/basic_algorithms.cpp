@@ -212,11 +212,11 @@ TEST(Graph, Erase_Edge)
  */
 TEST(Graph, Vertex_Degree)
 {
-    graphs::Directed_Graph<int> g{1, 2, 3, 4};
-    auto it_1 = g.begin();
-    auto it_2 = std::next(it_1);
-    auto it_3 = std::next(it_2);
-    auto it_4 = std::next(it_3);
+    graphs::Directed_Graph<int> g;
+    auto it_1 = g.insert_vertex(1);
+    auto it_2 = g.insert_vertex(2);
+    auto it_3 = g.insert_vertex(3);
+    auto it_4 = g.insert_vertex(4);
 
     g.insert_edges({{it_2, it_1},
                     {it_2, it_3},
