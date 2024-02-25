@@ -1,4 +1,4 @@
-aux_source_directory(./src SRC_LIST)
+aux_source_directory(./unit-tests SRC_LIST)
 
 add_executable(unit_tests ${SRC_LIST})
 
