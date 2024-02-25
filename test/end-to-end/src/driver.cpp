@@ -81,8 +81,12 @@ int main()
     auto finish = std::chrono::high_resolution_clock::now();
 
     using ms = std::chrono::milliseconds;
-    std::cout << "DFS takes: " << std::chrono::duration_cast<ms>(finish - start).count()
-              << " ms" << std::endl;
+    #ifdef RECURSIVE
+    std::cout << "Recursive DFS takes: ";
+    #else
+    std::cout << "DFS takes: ";
+    #endif
+    std::cout << std::chrono::duration_cast<ms>(finish - start).count() << " ms" << std::endl;
 
     return 0;
 }
