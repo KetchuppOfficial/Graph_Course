@@ -50,12 +50,15 @@ public:
 
     Directed_Graph() = default;
 
-    Directed_Graph(std::initializer_list<vertex_type> il)
+    template<std::input_iterator It>
+    Directed_Graph(It first, It last)
     {
-        std::ranges::copy(il, std::back_inserter(vertices_));
+        std::ranges::copy(first, last, std::back_inserter(vertices_));
         for (auto it = begin(), ite = end(); it != ite; ++it)
             adjacency_list_.emplace(it, edges_cont{});
     }
+
+    Directed_Graph(std::initializer_list<vertex_type> il) : Directed_Graph{il.begin(), il.end()} {}
 
     Directed_Graph(const Directed_Graph &rhs) = delete;
     Directed_Graph &operator=(const Directed_Graph &rhs) = delete;
