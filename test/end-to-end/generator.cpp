@@ -3,11 +3,23 @@
 #include <set>
 #include <utility>
 #include <cstdlib>
+#include <stdexcept>
 
 int main(int argc, char *argv[])
 {
+    if (argc != 3)
+        throw std::runtime_error{"The program expects exactly 3 command line arguments"};
+
     int n_vertices = std::atoi(argv[1]);
+    if (n_vertices <= 0)
+        throw std::runtime_error{"The number of vertices has to be a positive integer"};
+
     int n_edges = std::atoi(argv[2]);
+    if (n_vertices < 0)
+        throw std::runtime_error{"The number of vertices has to be a non-negative integer"};
+
+    if (n_edges > n_vertices * (n_vertices - 1))
+        throw std::runtime_error{"Too many edges"};
 
     for (auto v = 0; v != n_vertices; ++v)
         std::cout << "V " << v << ' ';
@@ -30,8 +42,6 @@ int main(int argc, char *argv[])
             ++e;
         }
     }
-
-    std::cout << std::endl;
 
     return 0;
 }
