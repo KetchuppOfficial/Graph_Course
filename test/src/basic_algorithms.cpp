@@ -137,6 +137,72 @@ TEST(Graph, Erase_Vertex)
 }
 
 /*
+ * +--- 1 ---> 2 ---> 3
+ * |    ^
+ * |    |
+ * +----+
+ */
+TEST(Graph, Erase_Edge)
+{
+    graphs::Directed_Graph<int> g;
+    auto it_1 = g.insert_vertex(1);
+    auto it_2 = g.insert_vertex(2);
+    auto it_3 = g.insert_vertex(3);
+    g.insert_edges({{it_1, it_2}, {it_2, it_3}, {it_1, it_1}});
+
+    g.erase_edge(it_2, it_3);
+
+    EXPECT_EQ(g.n_vertices(), 3);
+    EXPECT_EQ(g.n_edges(), 2);
+
+    EXPECT_TRUE(g.are_adjacent(it_1, it_1));
+    EXPECT_TRUE(g.are_adjacent(it_1, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_1, it_3));
+
+    EXPECT_FALSE(g.are_adjacent(it_2, it_1));
+    EXPECT_FALSE(g.are_adjacent(it_2, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_2, it_3));
+
+    EXPECT_FALSE(g.are_adjacent(it_3, it_1));
+    EXPECT_FALSE(g.are_adjacent(it_3, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_3, it_3));
+
+    g.erase_edge(it_3, it_2); // no effect
+
+    EXPECT_EQ(g.n_vertices(), 3);
+    EXPECT_EQ(g.n_edges(), 2);
+
+    EXPECT_TRUE(g.are_adjacent(it_1, it_1));
+    EXPECT_TRUE(g.are_adjacent(it_1, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_1, it_3));
+
+    EXPECT_FALSE(g.are_adjacent(it_2, it_1));
+    EXPECT_FALSE(g.are_adjacent(it_2, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_2, it_3));
+
+    EXPECT_FALSE(g.are_adjacent(it_3, it_1));
+    EXPECT_FALSE(g.are_adjacent(it_3, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_3, it_3));
+
+    g.erase_edge(it_1, it_1);
+
+    EXPECT_EQ(g.n_vertices(), 3);
+    EXPECT_EQ(g.n_edges(), 1);
+
+    EXPECT_FALSE(g.are_adjacent(it_1, it_1));
+    EXPECT_TRUE(g.are_adjacent(it_1, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_1, it_3));
+
+    EXPECT_FALSE(g.are_adjacent(it_2, it_1));
+    EXPECT_FALSE(g.are_adjacent(it_2, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_2, it_3));
+
+    EXPECT_FALSE(g.are_adjacent(it_3, it_1));
+    EXPECT_FALSE(g.are_adjacent(it_3, it_2));
+    EXPECT_FALSE(g.are_adjacent(it_3, it_3));
+}
+
+/*
  *   +------> 3
  *   |        ^
  *   |        |
