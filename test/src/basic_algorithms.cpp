@@ -41,6 +41,9 @@ TEST(Graph, Insert_Vertex)
     EXPECT_TRUE(std::ranges::equal(g, list)); // check that the order of vertices is preserved
 }
 
+/*
+ * 1 ---> 2 ---> 3
+ */
 TEST(Graph, Insert_Edge)
 {
     graphs::Directed_Graph<int> g;
