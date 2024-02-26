@@ -4,12 +4,14 @@
 # argv[2]: the number of edges
 
 red="\033[1;31m"
+green="\033[1;32m"
 default="\033[0m"
 
-top_dir="../../"
+script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+top_dir="${script_dir}/../../"
 build_dir="${top_dir}build/"
-data="data/"
-bin_dir="bin/"
+data="${script_dir}/data/"
+bin_dir="${script_dir}/bin/"
 
 test_generator="generator"
 test_driver="driver"
@@ -22,19 +24,19 @@ function build_from_sources
     cmake ${top_dir} -B ${build_dir} ${basic_options}
 
     echo -en "\n"
-    echo "Building test generator..."
+    echo -e "${green}Building test generator...${default}"
     cmake --build ${build_dir} --target ${test_generator}
     echo -en "\n"
 
-    echo "Building test driver for DFS..."
+    echo -e "${green}Building test driver for DFS...${default}"
     cmake --build ${build_dir} --target ${test_driver}
     echo -en "\n"
 
-    echo "Building test driver for recursive DFS..."
+    echo -e "${green}Building test driver for recursive DFS...${default}"
     cmake --build ${build_dir} --target ${rec_test_driver}
     echo -en "\n"
 
-    echo "Installing..."
+    echo -e "${green}Installing...${default}"
     cmake --install ${build_dir}
     echo -en "\n"
 }
@@ -46,7 +48,7 @@ function generate_test
 
     mkdir -p ${data}
 
-    echo "Generating test..."
+    echo -e "${green}Generating test...${default}"
     ${bin_dir}${test_generator} ${n_vertices} ${n_edges} > "${data}${n_vertices}-${n_edges}.test"
     echo -en "\n"
 }
@@ -56,30 +58,30 @@ function run_test
     local n_vertices=$1
     local n_edges=$2
 
-    echo "Running test on DFS..."
+    echo -e "${green}Running test on DFS...${default}"
     ${bin_dir}${test_driver} < "${data}${n_vertices}-${n_edges}.test"
     echo -en "\n"
 
-    echo "Running test on recursive DFS..."
+    echo -e "${green}Running test on recursive DFS..${default}"
     ${bin_dir}${rec_test_driver} < "${data}${n_vertices}-${n_edges}.test"
     echo -en "\n"
 }
 
 if [ $# -ne 2 ]
 then
-    echo "${red}Testing script requires exactly 2 arguments${default}"
+    echo -e "${red}Testing script requires exactly 2 arguments${default}"
 else
     n_vertices=$1
 
     if [ $n_vertices -le 0 ]
     then
-        echo "${red}The number of vertices has to be a positive integer number${default}"
+        echo -e "${red}The number of vertices has to be a positive integer number${default}"
     else
         n_edges=$2
 
         if [ $n_edges -le 0 ]
         then
-            echo "${red}The number of vertices has to be a positive integer number${default}"
+            echo -e "${red}The number of vertices has to be a positive integer number${default}"
         else
             build_from_sources
             generate_test $n_vertices $n_edges
