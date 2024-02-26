@@ -14,12 +14,12 @@
 namespace graphs
 {
 
-template<typename G> // G stands for "graph"
+template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
 requires std::ranges::forward_range<G>
 class BFS final
 {
     using graph_type = G;
-    using vertex_iterator = typename graph_traits<G>::vertex_iterator;
+    using vertex_iterator = typename Traits::vertex_iterator;
     struct iterator_hash final
     {
         std::size_t operator()(vertex_iterator it) const noexcept
@@ -87,7 +87,7 @@ public:
             vertex_iterator u_it = Q.front();
             Q.pop();
 
-            auto [begin, end] = graph_traits<G>::adjacent_vertices(g, u_it);
+            auto [begin, end] = Traits::adjacent_vertices(g, u_it);
             for (auto v_it : std::ranges::subrange(begin, end))
             {
                 // we are sure that find() return a valid iterator; no need for at()
@@ -128,7 +128,7 @@ private:
     info_table_type bfs_init(const graph_type &g, vertex_iterator source_it)
     {
         info_table_type bfs_info;
-        bfs_info.reserve(graph_traits<G>::n_vertices(g));
+        bfs_info.reserve(Traits::n_vertices(g));
 
         auto end = std::ranges::end(g);
 

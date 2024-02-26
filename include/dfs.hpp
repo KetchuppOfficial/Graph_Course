@@ -17,11 +17,11 @@ namespace graphs
 
 struct recursive final {}; // a tag to be used if you want to run dfs recursively
 
-template<typename G> // G stands for "graph"
+template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
 requires std::ranges::forward_range<G>
 class DFS final
 {
-    using vertex_iterator = typename graph_traits<G>::vertex_iterator;
+    using vertex_iterator = typename Traits::vertex_iterator;
     using stack_type = std::stack<vertex_iterator, std::vector<vertex_iterator>>;
 
     struct iterator_hash final
@@ -88,7 +88,7 @@ public:
                         u_info.color_ = Color::gray;
                         u_info.dfs_node_.discovery_time_ = ++time;
 
-                        auto [begin, end] = graph_traits<G>::adjacent_vertices(g, u_it);
+                        auto [begin, end] = Traits::adjacent_vertices(g, u_it);
                         for (auto v_it : std::ranges::subrange(begin, end))
                         {
                             // we are sure that find() returns a valid iterator; no need for at()
@@ -165,7 +165,7 @@ private:
     info_table_type dfs_init(const G &g)
     {
         info_table_type dfs_info;
-        dfs_info.reserve(graph_traits<G>::n_vertices(g));
+        dfs_info.reserve(Traits::n_vertices(g));
 
         for (auto it = std::ranges::begin(g), ite = std::ranges::end(g); it != ite; ++it)
             dfs_info.emplace(it, Info_Node{});
@@ -189,7 +189,7 @@ private:
         u_info.dfs_node_.discovery_time_ = ++time;
         u_info.color_ = Color::gray;
 
-        auto [begin, end] = graph_traits<G>::adjacent_vertices(g, u_it);
+        auto [begin, end] = Traits::adjacent_vertices(g, u_it);
         for (auto v_it : std::ranges::subrange(begin, end))
         {
             // we are sure that find() returns a valid iterator; no need for at()
