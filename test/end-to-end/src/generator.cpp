@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <stdexcept>
 
-int main(int argc, char *argv[])
+std::pair<int, int> get_cmd_line_args(int argc, char *argv[])
 {
     if (argc != 3)
         throw std::runtime_error{"The program expects exactly 3 command line arguments"};
@@ -20,6 +20,13 @@ int main(int argc, char *argv[])
 
     if (n_edges > n_vertices * (n_vertices - 1))
         throw std::runtime_error{"Too many edges"};
+
+    return std::pair{n_vertices, n_edges};
+}
+
+int main(int argc, char *argv[])
+{
+    auto [n_vertices, n_edges] = get_cmd_line_args(argc, argv);
 
     for (auto v = 0; v != n_vertices; ++v)
         std::cout << "V " << v << ' ';
