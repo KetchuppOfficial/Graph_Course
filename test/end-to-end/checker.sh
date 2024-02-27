@@ -72,14 +72,15 @@ then
     echo -e "${red}Testing script requires exactly 2 arguments${default}"
 else
     n_vertices=$1
+    number="^[0-9]+$"
 
-    if [ $n_vertices -le 0 ]
+    if ! [[ $n_keys =~ $number ]] || [ $n_vertices -le 0 ]
     then
         echo -e "${red}The number of vertices has to be a positive integer number${default}"
     else
         n_edges=$2
 
-        if [ $n_edges -le 0 ]
+        if ! [[ $n_edges =~ $number ]] || [ $n_edges -le 0 ]
         then
             echo -e "${red}The number of vertices has to be a positive integer number${default}"
         else
