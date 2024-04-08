@@ -90,12 +90,12 @@ public:
             auto [begin, end] = Traits::adjacent_vertices(g, u_it);
             for (auto v_it : std::ranges::subrange(begin, end))
             {
-                // we are sure that find() return a valid iterator; no need for at()
+                // we are sure that find() returns a valid iterator; no need for at()
                 Info_Node &v_info = bfs_info.find(v_it)->second;
 
                 if (v_info.color_ == Color::white)
                 {
-                    // we are sure that find() return a valid iterator; no need for at()
+                    // we are sure that find() returns a valid iterator; no need for at()
                     Info_Node &u_info = bfs_info.find(u_it)->second;
 
                     v_info.color_ = Color::gray;
