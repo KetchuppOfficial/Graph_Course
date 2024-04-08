@@ -74,7 +74,7 @@ else
     n_vertices=$1
     number="^[0-9]+$"
 
-    if ! [[ $n_keys =~ $number ]] || [ $n_vertices -le 0 ]
+    if ! [[ $n_vertices =~ $number ]] || [ $n_vertices -le 0 ]
     then
         echo -e "${red}The number of vertices has to be a positive integer number${default}"
     else
@@ -82,7 +82,7 @@ else
 
         if ! [[ $n_edges =~ $number ]] || [ $n_edges -le 0 ]
         then
-            echo -e "${red}The number of vertices has to be a positive integer number${default}"
+            echo -e "${red}The number of edges has to be a positive integer number${default}"
         else
             build_from_sources
             generate_test $n_vertices $n_edges
