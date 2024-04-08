@@ -88,7 +88,7 @@ public:
             Q.pop();
 
             // we are sure that find() returns a valid iterator; no need for at()
-            Info_Node &u_info = bfs_info.find(u_it)->second;
+            const Info_Node &u_info = bfs_info.find(u_it)->second;
 
             auto [begin, end] = Traits::adjacent_vertices(g, u_it);
             for (auto v_it : std::ranges::subrange(begin, end))
