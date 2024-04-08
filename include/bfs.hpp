@@ -87,6 +87,9 @@ public:
             vertex_iterator u_it = Q.front();
             Q.pop();
 
+            // we are sure that find() returns a valid iterator; no need for at()
+            Info_Node &u_info = bfs_info.find(u_it)->second;
+
             auto [begin, end] = Traits::adjacent_vertices(g, u_it);
             for (auto v_it : std::ranges::subrange(begin, end))
             {
@@ -95,9 +98,6 @@ public:
 
                 if (v_info.color_ == Color::white)
                 {
-                    // we are sure that find() returns a valid iterator; no need for at()
-                    Info_Node &u_info = bfs_info.find(u_it)->second;
-
                     v_info.color_ = Color::gray;
                     v_info.distance_ = *u_info.distance_ + 1;
                     v_info.predecessor_ = u_it;
