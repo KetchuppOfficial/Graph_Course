@@ -12,6 +12,9 @@
 #include <ostream>
 #include <memory>
 #include <unordered_map>
+#include <tuple>
+
+#include <boost/container_hash/hash.hpp>
 
 #include "graph_traits.hpp"
 
@@ -33,6 +36,11 @@ public:
     using iterator = typename vertex_cont::iterator;
     using const_iterator = typename vertex_cont::const_iterator;
     using const_reference = const vertex_type &;
+    using weight_type = int;
+
+    static constexpr weight_type default_weight = 1;
+
+private:
 
     struct iterator_hash final
     {
@@ -42,7 +50,16 @@ public:
         }
     };
 
-private:
+    struct pair_hash final
+    {
+        std::size_t operator()(std::pair<const_iterator, const_iterator> p) const
+        {
+            std::size_t seed = 0;
+            boost::hash_combine(seed, iterator_hash{}(p.first));
+            boost::hash_combine(seed, iterator_hash{}(p.second));
+            return seed;
+        }
+    };
 
     using edges_cont = std::unordered_set<const_iterator, iterator_hash>;
 
@@ -114,22 +131,39 @@ public:
     // Operations on edges
 
     // O(1)
-    void insert_edge(const_iterator from_it, const_iterator to_it)
+    void insert_edge(const_iterator from_it, const_iterator to_it, weight_type w = default_weight)
     {
         adjacency_list_[from_it].insert(to_it);
+        weights_.emplace(std::pair{from_it, to_it}, w);
     }
 
     // O(il.size())
-    void insert_edges(std::initializer_list<std::pair<const_iterator, const_iterator>> il)
+    void insert_edges(std::initializer_list<std::tuple<const_iterator,
+                                                       const_iterator,
+                                                       weight_type>> il)
     {
-        for (auto [from, to] : il)
-            insert_edge(from, to);
+        for (auto &[from, to, w] : il)
+            insert_edge(from, to, w);
+    }
+
+    // O(il.size())
+    void insert_edges(std::initializer_list<std::pair<const_iterator,
+                                                      const_iterator>> il)
+    {
+        for (auto &[from, to] : il)
+            insert_edge(from, to, default_weight);
     }
 
     // O(1)
     void erase_edge(const_iterator from_it, const_iterator to_it)
     {
         adjacency_list_[from_it].erase(to_it);
+    }
+
+    // O(1)
+    weight_type weight(const_iterator from_it, const_iterator to_it) const
+    {
+        return weights_.at(std::pair{from_it, to_it});
     }
 
     // Mixed operations
@@ -193,6 +227,10 @@ private:
     std::unordered_map<const_iterator,
                        edges_cont,
                        iterator_hash> adjacency_list_;
+
+    std::unordered_map<std::pair<const_iterator, const_iterator>,
+                       weight_type,
+                       pair_hash> weights_;
 };
 
 template<typename T>
@@ -202,6 +240,7 @@ struct graph_traits<Directed_Graph<T>>
     using vertex_type = T;
     using vertex_iterator = typename Directed_Graph<T>::const_iterator;
     using edge_iterator = typename Directed_Graph<T>::edge_iterator;
+    using weight_type = typename Directed_Graph<T>::weight_type;
 
     static size_type n_edges(const Directed_Graph<T> &g) { return g.n_edges(); }
     static size_type n_vertices(const Directed_Graph<T> &g) { return g.n_vertices(); }
@@ -210,6 +249,11 @@ struct graph_traits<Directed_Graph<T>>
            -> std::pair<edge_iterator, edge_iterator>
     {
         return g.adjacent_vertices(it);
+    }
+
+    static weight_type weight(const Directed_Graph<T> &g, vertex_iterator from, vertex_iterator to)
+    {
+        return g.weight(from, to);
     }
 };
 

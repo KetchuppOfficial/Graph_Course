@@ -20,6 +20,8 @@ struct graph_traits
  *
  * using vertex_type - type of data contained in vertices
  *
+ * using weight_type - type of edge weight
+ *
  * using vertex_iterator - iterator over all the vertices, i.e.
  *     std::iterator_traits<vertex_iterator>::value_type == vertex_type
  *
@@ -34,6 +36,9 @@ struct graph_traits
  *
  * static std::pair<edge_iterator, edge_iterator> adjacent_vertices(const G &g, vertex_iterator i)
  *     - returns pair of iterators over a range of iterators over adjacent nodes of i
+ *
+ * static weight_type weight(const G &g, vertex_iterator from, vertex_iterator to)
+ *     - returns weight of the edge connecting "from" with "to".
  */
 };
 
