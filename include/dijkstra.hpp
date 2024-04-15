@@ -28,7 +28,7 @@ struct Negative_Weights : public std::logic_error
 };
 
 template<typename G, typename Traits = graph_traits<G>>
-class Dijkstra
+class Dijkstra final
 {
 public:
 
