@@ -42,7 +42,7 @@ TEST(Dijkstra, Unique_Paths)
         {'b', std::vector{it.at('a'), it.at('d'), it.at('b')}},
         {'c', std::vector{it.at('a'), it.at('e'), it.at('c')}},
         {'d', std::vector{it.at('a'), it.at('d')}},
-        {'e', std::vector{it.a    auto n_vertices = g.n_vertices();t('a'), it.at('e')}},
+        {'e', std::vector{it.at('a'), it.at('e')}},
         {'f', std::vector{it.at('a'), it.at('e'), it.at('f')}}
     };
 
@@ -79,4 +79,25 @@ TEST(Dijkstra, Nonunique_Paths)
 
     for (char v : vertices)
         EXPECT_EQ(sssp.distance(it.at(v)), distance.at(v));
+}
+
+TEST(Dijkstra, Negative_Weights)
+{
+    using graph_type = graphs::Directed_Graph<char>;
+    using iterator = typename graph_type::iterator;
+
+    graph_type g;
+
+    auto vertices = {'a', 'b', 'c'};
+
+    std::unordered_map<char, iterator> it;
+    for (auto v : vertices)
+        it.emplace(v, g.insert_vertex(v));
+
+    g.insert_edges({{it.at('a'), it.at('b'), 1},
+                    {it.at('a'), it.at('c'), 2},
+                    {it.at('b'), it.at('c'), -1}});
+
+    EXPECT_TRUE(graphs::Dijkstra<graph_type>::has_negative_weights(g));
+    EXPECT_THROW((graphs::Dijkstra{g, it.at('a')}), graphs::Negative_Weights);
 }

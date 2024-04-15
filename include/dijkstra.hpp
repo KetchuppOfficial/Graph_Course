@@ -10,6 +10,7 @@
 #include <ranges>
 #include <algorithm>
 #include <vector>
+#include <stdexcept>
 
 #include <boost/heap/fibonacci_heap.hpp>
 
@@ -18,6 +19,13 @@
 
 namespace graphs
 {
+
+struct Negative_Weights : public std::logic_error
+{
+    Negative_Weights()
+        : std::logic_error{"Dijksta's algorithms can only be used "
+                           "for graphs with non-negative weights"} {};
+};
 
 template<typename G, typename Traits = graph_traits<G>>
 class Dijkstra
@@ -67,6 +75,9 @@ public:
     {
         if (source_it == std::ranges::end(g))
             return;
+
+        if (has_negative_weights(g))
+            throw Negative_Weights{};
 
         dijkstra_init(g, source_it);
 
@@ -143,6 +154,20 @@ public:
         std::ranges::reverse(path_);
 
         return path_;
+    }
+
+    static bool has_negative_weights(const G &g)
+    {
+        for (auto u_it = std::ranges::begin(g), ite = std::ranges::end(g); u_it != ite; ++u_it)
+        {
+            auto cond = [&g, u_it](auto v_it){ return Traits::weight(g, u_it, v_it) < 0; };
+            auto [from, to] = Traits::adjacent_vertices(g, u_it);
+
+            if (std::ranges::any_of(from, to, cond))
+                return true;
+        }
+
+        return false;
     }
 
 private:
