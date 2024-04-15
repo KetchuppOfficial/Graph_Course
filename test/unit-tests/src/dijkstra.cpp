@@ -1,54 +1,53 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
-#include <array>
 #include <vector>
 #include <unordered_map>
+#include <initializer_list>
 
 #include "graph.hpp"
 #include "dijkstra.hpp"
 
 TEST(Dijkstra, Unique_Paths)
 {
-    graphs::Directed_Graph<int> g;
+    graphs::Directed_Graph<char> g;
     using iterator = decltype(g)::iterator;
 
-    std::array<iterator, 6> it = {g.insert_vertex(1),
-                                  g.insert_vertex(2),
-                                  g.insert_vertex(3),
-                                  g.insert_vertex(4),
-                                  g.insert_vertex(5),
-                                  g.insert_vertex(6)};
+    auto vertices = {'a', 'b', 'c', 'd', 'e', 'f'};
 
-    auto n_vertices = g.n_vertices();
+    std::unordered_map<char, iterator> it;
+    for (auto v : vertices)
+        it.emplace(v, g.insert_vertex(v));
 
-    g.insert_edges({{it[0], it[1], 4},
-                    {it[0], it[3], 2},
-                    {it[0], it[4], 3},
-                    {it[1], it[5], 5},
-                    {it[2], it[5], 1},
-                    {it[3], it[1], 1},
-                    {it[4], it[2], 3},
-                    {it[4], it[5], 2}});
+    g.insert_edges({{it.at('a'), it.at('b'), 4},
+                    {it.at('a'), it.at('d'), 2},
+                    {it.at('a'), it.at('e'), 3},
+                    {it.at('b'), it.at('f'), 5},
+                    {it.at('c'), it.at('f'), 1},
+                    {it.at('d'), it.at('b'), 1},
+                    {it.at('e'), it.at('c'), 3},
+                    {it.at('e'), it.at('f'), 2}});
 
-    graphs::Dijkstra sssp{g, it[0]}; // sssp - single-source shortest paths
+    graphs::Dijkstra sssp{g, it.at('a')}; // sssp - single-source shortest paths
 
-    int distance[] = {0, 3, 6, 2, 3, 5};
-    for (auto i = 0; i != n_vertices; ++i)
-        EXPECT_EQ(sssp.distance(it[i]), distance[i]);
+    std::unordered_map<char, int> distance = {{'a', 0}, {'b', 3}, {'c', 6},
+                                              {'d', 2}, {'e', 3}, {'f', 5}};
 
-    std::array<std::vector<iterator>, 6> ref_path =
+    for (auto v : vertices)
+        EXPECT_EQ(sssp.distance(it.at(v)), distance.at(v));
+
+    std::unordered_map<char, std::vector<iterator>> ref_path =
     {
-        std::vector{it[0]},
-        std::vector{it[0], it[3], it[1]},
-        std::vector{it[0], it[4], it[2]},
-        std::vector{it[0], it[3]},
-        std::vector{it[0], it[4]},
-        std::vector{it[0], it[4], it[5]}
+        {'a', std::vector{it.at('a')}},
+        {'b', std::vector{it.at('a'), it.at('d'), it.at('b')}},
+        {'c', std::vector{it.at('a'), it.at('e'), it.at('c')}},
+        {'d', std::vector{it.at('a'), it.at('d')}},
+        {'e', std::vector{it.a    auto n_vertices = g.n_vertices();t('a'), it.at('e')}},
+        {'f', std::vector{it.at('a'), it.at('e'), it.at('f')}}
     };
 
-    for (auto i = 0; i != n_vertices; ++i)
-        EXPECT_TRUE(std::ranges::equal(sssp.path_to(it[i]), ref_path[i]));
+    for (auto v : vertices)
+        EXPECT_TRUE(std::ranges::equal(sssp.path_to(it.at(v)), ref_path.at(v)));
 }
 
 // Example from "Introduction to Algorithms" by Thomas H. Cormen and others
@@ -57,11 +56,11 @@ TEST(Dijkstra, Nonunique_Paths)
     graphs::Directed_Graph<char> g;
     using iterator = decltype(g)::iterator;
 
-    std::unordered_map<char, iterator> it = {{'s', g.insert_vertex('s')},
-                                             {'t', g.insert_vertex('t')},
-                                             {'x', g.insert_vertex('x')},
-                                             {'y', g.insert_vertex('y')},
-                                             {'z', g.insert_vertex('z')}};
+    auto vertices = {'s', 't', 'x', 'y', 'z'};
+
+    std::unordered_map<char, iterator> it;
+    for (auto v : vertices)
+        it.emplace(v, g.insert_vertex(v));
 
     g.insert_edges({{it.at('s'), it.at('t'), 10},
                     {it.at('s'), it.at('y'), 5},
@@ -78,6 +77,6 @@ TEST(Dijkstra, Nonunique_Paths)
 
     std::unordered_map<char, int> distance = {{'s', 0}, {'t', 8}, {'x', 9}, {'y', 5}, {'z', 7}};
 
-    for (char v : {'s', 't', 'x', 'y', 'z'})
+    for (char v : vertices)
         EXPECT_EQ(sssp.distance(it.at(v)), distance.at(v));
 }
