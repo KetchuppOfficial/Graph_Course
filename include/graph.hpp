@@ -158,6 +158,7 @@ public:
     void erase_edge(const_iterator from_it, const_iterator to_it)
     {
         adjacency_list_[from_it].erase(to_it);
+        weights_.erase(std::pair{from_it, to_it});
     }
 
     // O(1)
