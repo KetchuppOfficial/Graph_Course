@@ -1,16 +1,10 @@
 #ifndef INCLUDE_DIJKSTRA_HPP
 #define INCLUDE_DIJKSTRA_HPP
 
-#include <cstddef>
-#include <optional>
-#include <bit>
-#include <unordered_map>
-#include <iterator>
+#include <stdexcept>
 #include <utility>
 #include <ranges>
-#include <algorithm>
-#include <vector>
-#include <stdexcept>
+#include <iterator>
 
 #include <boost/heap/fibonacci_heap.hpp>
 
