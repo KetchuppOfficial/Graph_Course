@@ -63,22 +63,15 @@ public:
                 if (v_info.distance_ > u_info.distance_ + Traits::weight(g, u_it, v_it))
                 {
                     info_.clear();
-                    negative_cycle_ = true;
                     return;
                 }
             }
         }
-
-        negative_cycle_ = false;
     }
 
-    bool has_negative_weight_cycles() const noexcept { return negative_cycle_; }
+    bool has_negative_weight_cycles() const noexcept { return info_.empty(); }
 
-    explicit operator bool() const noexcept { return !negative_cycle_; }
-
-private:
-
-    bool negative_cycle_;
+    explicit operator bool() const noexcept { return !has_negative_weight_cycles(); }
 };
 
 } // namespace graphs
