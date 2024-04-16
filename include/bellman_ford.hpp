@@ -55,7 +55,7 @@ public:
         {
             Info_Node &u_info = info_.find(u_it)->second;
 
-            auto [adj_begin, adj_end] = Traits::adjacent_vertices(g,u_it);
+            auto [adj_begin, adj_end] = Traits::adjacent_vertices(g, u_it);
             for (auto v_it : std::ranges::subrange(adj_begin, adj_end))
             {
                 Info_Node &v_info = info_.find(v_it)->second;
