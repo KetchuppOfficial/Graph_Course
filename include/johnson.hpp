@@ -2,10 +2,11 @@
 #define INCLUDE_JOHNSON_HPP
 
 #include <cstddef>
-#include <unordered_map>
+#include <bit>
+#include <functional>
 #include <iterator>
 #include <ranges>
-#include <type_traits>
+#include <unordered_map>
 
 #include "graph_traits.hpp"
 #include "distance.hpp"
