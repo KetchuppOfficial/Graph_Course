@@ -86,8 +86,7 @@ TEST(Bellman_Ford, Nonunique_Paths)
     for (char v : vertices)
         EXPECT_EQ(sssp.distance(it.at(v)), distance.at(v));
 
-    g.erase_edge(it.at('x'), it.at('t'));
-    g.insert_edge(it.at('x'), it.at('t'), -6); // creating a negative weight cycle
+    g.change_weight(it.at('x'), it.at('t'), -6); // creating a negative weight cycle
 
     graphs::Bellman_Ford sssp2{g, it.at('s')};
 

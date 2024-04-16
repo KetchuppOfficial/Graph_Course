@@ -167,6 +167,12 @@ public:
         return weights_.at(std::pair{from_it, to_it});
     }
 
+    // O(1)
+    void change_weight(const_iterator from_it, const_iterator to_it, weight_type new_w)
+    {
+        weights_.at(std::pair{from_it, to_it}) = new_w;
+    }
+
     // Mixed operations
 
     // O(1)
