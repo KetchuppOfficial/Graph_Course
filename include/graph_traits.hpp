@@ -28,6 +28,8 @@ struct graph_traits
  * using edge_iterator - iterator over range of iterators on vertices adjacent to some vertex, i.e.
  *     std::iterator_traits<edge_iterator>::value_type == vertex_iterator
  *
+ * using iterator_hash - hash functor for hashing vertex_iterator
+ *
  * static size_type n_vertices(const G &g)
  *     - returns the number of nodes in the graph
  *

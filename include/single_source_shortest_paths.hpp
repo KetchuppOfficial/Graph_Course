@@ -48,14 +48,7 @@ protected:
             info_.emplace(it, Info_Node{});
     }
 
-    struct iterator_hash final
-    {
-        std::size_t operator()(vertex_iterator it) const noexcept
-        {
-            return std::bit_cast<std::size_t>(it);
-        }
-    };
-
+    using iterator_hash = typename Traits::iterator_hash;
     using info_table_type = std::unordered_map<vertex_iterator,
                             Info_Node,
                             iterator_hash>;

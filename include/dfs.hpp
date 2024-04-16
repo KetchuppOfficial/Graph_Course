@@ -4,7 +4,6 @@
 #include <ranges>
 #include <stack>
 #include <vector>
-#include <bit>
 #include <optional>
 #include <unordered_map>
 #include <ostream>
@@ -22,15 +21,8 @@ requires std::ranges::forward_range<G>
 class DFS final
 {
     using vertex_iterator = typename Traits::vertex_iterator;
+    using iterator_hash = typename Traits::iterator_hash;
     using stack_type = std::stack<vertex_iterator, std::vector<vertex_iterator>>;
-
-    struct iterator_hash final
-    {
-        std::size_t operator()(vertex_iterator it) const noexcept
-        {
-            return std::bit_cast<std::size_t>(it);
-        }
-    };
 
 public:
 

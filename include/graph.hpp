@@ -40,8 +40,6 @@ public:
 
     static constexpr weight_type default_weight = 1;
 
-private:
-
     struct iterator_hash final
     {
         std::size_t operator()(const_iterator it) const noexcept
@@ -49,6 +47,8 @@ private:
             return std::bit_cast<std::size_t>(it);
         }
     };
+
+private:
 
     struct pair_hash final
     {
@@ -245,9 +245,10 @@ struct graph_traits<Directed_Graph<T>>
 {
     using size_type = typename Directed_Graph<T>::size_type;
     using vertex_type = T;
+    using weight_type = typename Directed_Graph<T>::weight_type;
     using vertex_iterator = typename Directed_Graph<T>::const_iterator;
     using edge_iterator = typename Directed_Graph<T>::edge_iterator;
-    using weight_type = typename Directed_Graph<T>::weight_type;
+    using iterator_hash = typename Directed_Graph<T>::iterator_hash;
 
     static size_type n_edges(const Directed_Graph<T> &g) { return g.n_edges(); }
     static size_type n_vertices(const Directed_Graph<T> &g) { return g.n_vertices(); }

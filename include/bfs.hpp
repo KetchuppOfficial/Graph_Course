@@ -2,7 +2,6 @@
 #define INCLUDE_BFS_HPP
 
 #include <ranges>
-#include <bit>
 #include <optional>
 #include <map>
 #include <queue>
@@ -20,13 +19,7 @@ class BFS final
 {
     using graph_type = G;
     using vertex_iterator = typename Traits::vertex_iterator;
-    struct iterator_hash final
-    {
-        std::size_t operator()(vertex_iterator it) const noexcept
-        {
-            return std::bit_cast<std::size_t>(it);
-        }
-    };
+    using iterator_hash = typename Traits::iterator_hash;
 
 public:
 
