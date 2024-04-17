@@ -7,22 +7,25 @@
 #include "graph.hpp"
 #include "dfs.hpp"
 
+namespace
+{
+
 enum Queries : char { vertex = 'V', edge = 'E' };
 
-void check_vertex(int v)
+void check_stream(std::istream &is, int x)
 {
-    if (std::cin.fail())
+    if (is.fail())
     {
-        if (v == std::numeric_limits<int>::min())
-            throw std::runtime_error{"Vertex value is less than the minimum one"};
-        else if (v == std::numeric_limits<int>::max())
-            throw std::runtime_error{"Vertex value is greater than the maximum one"};
+        if (x == std::numeric_limits<int>::min())
+            throw std::runtime_error{"int value is less than the minimum one"};
+        else if (x == std::numeric_limits<int>::max())
+            throw std::runtime_error{"int value is greater than the maximum one"};
         else
-            throw std::runtime_error{"Error occurred while reading a vertex"};
+            throw std::runtime_error{"Error occurred while reading an int"};
     }
 }
 
-int main()
+graphs::Directed_Graph<int> read_graph(std::istream &is)
 {
     graphs::Directed_Graph<int> g;
     std::unordered_map<int, graphs::Directed_Graph<int>::iterator> map;
@@ -30,11 +33,11 @@ int main()
     while (true)
     {
         char query;
-        std::cin >> query;
+        is >> query;
 
-        if (std::cin.eof())
+        if (is.eof())
             break;
-        else if (std::cin.fail())
+        else if (is.fail())
             throw std::runtime_error{"Error occurred while reading a query"};
 
         switch (query)
@@ -42,9 +45,8 @@ int main()
             case Queries::vertex:
             {
                 int v;
-                std::cin >> v;
-
-                check_vertex(v);
+                is >> v;
+                check_stream(is, v);
 
                 if (map.contains(v))
                     throw std::runtime_error{"Vertices must be different in pairs"};
@@ -55,13 +57,19 @@ int main()
 
             case Queries::edge:
             {
-                int from, to;
-                std::cin >> from >> to;
+                int from;
+                is >> from;
+                check_stream(is, from);
 
-                check_vertex(from);
-                check_vertex(to);
+                int to;
+                is >> to;
+                check_stream(is, to);
 
-                g.insert_edge(map.at(from), map.at(to));
+                int w;
+                is >> w;
+                check_stream(is, w);
+
+                g.insert_edge(map.at(from), map.at(to), w);
                 break;
             }
 
@@ -70,6 +78,11 @@ int main()
         }
     }
 
+    return g;
+}
+
+static void test_dfs(const graphs::Directed_Graph<int> &g)
+{
     auto start = std::chrono::high_resolution_clock::now();
 
     #ifdef RECURSIVE
@@ -87,6 +100,15 @@ int main()
     std::cout << "DFS takes: ";
     #endif
     std::cout << std::chrono::duration_cast<ms>(finish - start).count() << " ms" << std::endl;
+}
+
+} // unnamed namespace
+
+int main()
+{
+    auto graph = read_graph(std::cin);
+
+    test_dfs(graph);
 
     return 0;
 }
