@@ -3,12 +3,12 @@
 
 #include <ranges>
 #include <optional>
-#include <map>
 #include <queue>
 #include <unordered_map>
 #include <iterator>
 
 #include "graph_traits.hpp"
+#include "distance.hpp"
 
 namespace graphs
 {
@@ -17,60 +17,39 @@ template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
 requires std::ranges::forward_range<G>
 class BFS final
 {
-    using graph_type = G;
-    using vertex_iterator = typename Traits::vertex_iterator;
-    using iterator_hash = typename Traits::iterator_hash;
-
 public:
 
-    using distance_type = std::optional<std::size_t>;
-
-    struct BFS_Node final
-    {
-        vertex_iterator node_it_;
-        vertex_iterator predecessor_it_;
-    };
+    using distance_type = Distance<std::size_t>;
 
 private:
+
+    using vertex_iterator = typename Traits::vertex_iterator;
+    using iterator_hash = typename Traits::iterator_hash;
 
     enum class Color { white, gray };
 
     struct Info_Node final
     {
         distance_type distance_;
-        vertex_iterator predecessor_;
-        Color color_{Color::white};
+        std::optional<vertex_iterator> predecessor_;
 
-        Info_Node(vertex_iterator default_predecessor) : predecessor_{default_predecessor} {}
-        Info_Node(std::size_t distance, Color color, vertex_iterator default_predecessor)
-                 : distance_{distance},
-                   predecessor_{default_predecessor},
-                   color_{color} {}
+        Info_Node() = default;
+        Info_Node(std::size_t distance) : distance_{distance} {}
     };
 
-    struct Comp final
-    {
-        bool operator()(distance_type lhs, distance_type rhs) const
-        {
-            if (!lhs)
-                return false;
-            else if (!rhs)
-                return true;
-            else
-                return *lhs < *rhs;
-        }
-    };
+    using info_table_type = std::unordered_map<vertex_iterator,
+                                               Info_Node,
+                                               iterator_hash>;
 
-    using table_type = std::multimap<distance_type, BFS_Node, Comp>;
+    using color_table_type = std::unordered_map<vertex_iterator,
+                                                Color,
+                                                iterator_hash>;
 
 public:
 
-    BFS(const graph_type &g, vertex_iterator source_it)
+    BFS(const G &g, vertex_iterator source_it)
     {
-        if (source_it == std::ranges::end(g))
-            return;
-
-        auto bfs_info = bfs_init(g, source_it);
+        auto color_table = bfs_init(g, source_it);
 
         std::queue<vertex_iterator> Q;
         Q.push(source_it);
@@ -80,62 +59,66 @@ public:
             vertex_iterator u_it = Q.front();
             Q.pop();
 
-            // we are sure that find() returns a valid iterator; no need for at()
-            const Info_Node &u_info = bfs_info.find(u_it)->second;
+            const Info_Node &u_info = info_.find(u_it)->second;
 
             for (auto v_it : Traits::adjacent_vertices(g, u_it))
             {
-                // we are sure that find() returns a valid iterator; no need for at()
-                Info_Node &v_info = bfs_info.find(v_it)->second;
-
-                if (v_info.color_ == Color::white)
+                if (color_table[v_it] == Color::white)
                 {
-                    v_info.color_ = Color::gray;
-                    v_info.distance_ = *u_info.distance_ + 1;
+                    color_table[v_it] = Color::gray;
+
+                    Info_Node &v_info = info_.find(v_it)->second;
+                    v_info.distance_ = u_info.distance_ + std::size_t{1};
                     v_info.predecessor_ = u_it;
+
                     Q.push(v_it);
                 }
             }
         }
-
-        for (auto &[vertex_it, info_node] : bfs_info)
-            bfs_table_.emplace(info_node.distance_, BFS_Node{vertex_it, info_node.predecessor_});
     }
 
-    using iterator = typename table_type::iterator;
-    using const_iterator = typename table_type::const_iterator;
+    using iterator = typename info_table_type::iterator;
+    using const_iterator = typename info_table_type::const_iterator;
 
-    iterator begin() { return bfs_table_.begin(); }
-    const_iterator begin() const { return bfs_table_.begin(); }
+    iterator begin() { return info_.begin(); }
+    const_iterator begin() const { return info_.begin(); }
     const_iterator cbegin() const { return begin(); }
 
-    iterator end() { return bfs_table_.end(); }
-    const_iterator end() const { return bfs_table_.end(); }
+    iterator end() { return info_.end(); }
+    const_iterator end() const { return info_.end(); }
     const_iterator cend() const { return end(); }
+
+    distance_type distance(vertex_iterator u_it) const { return info_.at(u_it).distance_; }
 
 private:
 
-    using info_table_type = std::unordered_map<vertex_iterator, Info_Node, iterator_hash>;
-
-    info_table_type bfs_init(const graph_type &g, vertex_iterator source_it)
+    color_table_type bfs_init(const G &g, vertex_iterator source_it)
     {
-        info_table_type bfs_info;
-        bfs_info.reserve(Traits::n_vertices(g));
+        color_table_type color_table;
 
-        auto end = std::ranges::end(g);
+        auto n_vertices = Traits::n_vertices(g);
+        info_.reserve(n_vertices);
+        color_table.reserve(n_vertices);
 
         for (auto it = std::ranges::begin(g); it != source_it; ++it)
-            bfs_info.emplace(it, Info_Node{end});
+        {
+            info_.try_emplace(it);
+            color_table.try_emplace(it, Color::white);
+        }
 
-        bfs_info.emplace(source_it, Info_Node{0, Color::gray, end});
+        info_.try_emplace(source_it, 0);
+        color_table.try_emplace(source_it, Color::gray);
 
-        for (auto it = std::next(source_it); it != end; ++it)
-            bfs_info.emplace(it, Info_Node{end});
+        for (auto it = std::next(source_it); it != std::ranges::end(g); ++it)
+        {
+            info_.try_emplace(it);
+            color_table.try_emplace(it, Color::white);
+        }
 
-        return bfs_info;
+        return color_table;
     }
 
-    table_type bfs_table_;
+    info_table_type info_;
 };
 
 } // namespace graphs
