@@ -22,16 +22,18 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build [--target <tgt>]
 ```
 
-**tgt** can be **generator**, **driver**, **recursive_driver** and **unit_tests**.
+Targets:
 
-The **generator** is a program that generates a graph in a format discussed below and prints it to
+- **generator**: a program that generates a graph in a format discussed below and prints it to
 stdout.
 
-The **driver** is a program that receives a graph from stdin and runs DFS on that graph.
+- **driver**: a program that receives a graph from stdin and runs DFS on that graph.
 
-The **recursive_driver** is the same as **driver** except that DFS algorithm is recursive.
+- **graphic_dump**: a program that receives a graph from stdin and produces the graph's description in dot format on stdout.
 
-The **unit_tests** is self-explanatory.
+- **recursive_driver**: the same as **driver** except that DFS algorithm is recursive.
+
+- **unit_tests**: self-explanatory.
 
 If --target option is omitted, all targets will be built.
 
