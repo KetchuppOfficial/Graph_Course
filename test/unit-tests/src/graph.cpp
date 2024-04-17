@@ -2,6 +2,8 @@
 
 #include <initializer_list>
 #include <algorithm>
+#include <type_traits>
+#include <set>
 
 #include "graph.hpp"
 
@@ -16,12 +18,25 @@ TEST(Graph, Default_Constructor)
 TEST(Graph, Initializer_List_Constructor)
 {
     graphs::Directed_Graph g{1, 2, 3, 4};
+    static_assert(std::is_same_v<decltype(g)::vertex_type, int>);
 
     EXPECT_EQ(g.n_vertices(), 4);
     EXPECT_EQ(g.n_edges(), 0);
 
     auto list = {1, 2, 3, 4};
     EXPECT_TRUE(std::ranges::equal(g, list)); // check that the order of vertices is preserved
+}
+
+TEST(Graph, Iterator_Constructor)
+{
+    std::set set{1, 6, 12, 14, 5};
+    graphs::Directed_Graph g(set.begin(), set.end());
+    static_assert(std::is_same_v<decltype(g)::vertex_type, int>);
+
+    EXPECT_EQ(g.n_vertices(), 5);
+    EXPECT_EQ(g.n_edges(), 0);
+
+    EXPECT_TRUE(std::ranges::equal(g, set));
 }
 
 TEST(Graph, Insert_Vertex)

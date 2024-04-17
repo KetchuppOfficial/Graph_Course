@@ -240,6 +240,9 @@ private:
                        pair_hash> weights_;
 };
 
+template<std::input_iterator It> Directed_Graph(It first, It last)
+    -> Directed_Graph<typename std::iterator_traits<It>::value_type>;
+
 template<typename T>
 struct graph_traits<Directed_Graph<T>>
 {
