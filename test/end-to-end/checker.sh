@@ -49,7 +49,8 @@ function generate_test
     mkdir -p ${data}
 
     echo -e "${green}Generating test...${default}"
-    ${bin_dir}${test_generator} ${n_vertices} ${n_edges} > "${data}${n_vertices}-${n_edges}.test"
+    ${bin_dir}${test_generator} --n-vertices ${n_vertices} --n-edges ${n_edges} \
+        > "${data}${n_vertices}-${n_edges}.test"
     echo -en "\n"
 }
 
