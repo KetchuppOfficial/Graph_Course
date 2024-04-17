@@ -43,13 +43,13 @@ ctest --test-dir build
 
 ## How to run end-to-end tests
 
-If you want to run some tests on DFS, a special script [checker.sh](/test/end-to-end/checker.sh) is
+If you want to run some tests on DFS, a special script [dfs.sh](/test/end-to-end/dfs.sh) is
 provided for such purpose.
 
 Let **V** be the number of vertices, **E** - the number of edges, then command sequence:
 
 ```bash
-./test/end-to-end/checker.sh V E
+./test/end-to-end/dfs.sh V E
 ```
 
 generates a directed graph of **V** vertices and **E** edges. The graph is saved in
