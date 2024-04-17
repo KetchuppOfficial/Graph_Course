@@ -13,6 +13,7 @@
 #include <memory>
 #include <unordered_map>
 #include <tuple>
+#include <ranges>
 
 #include <boost/container_hash/hash.hpp>
 
@@ -184,10 +185,9 @@ public:
     using edge_iterator = typename edges_cont::const_iterator;
 
     // O(1)
-    std::pair<edge_iterator, edge_iterator> adjacent_vertices(const_iterator it) const
+    std::ranges::subrange<edge_iterator> adjacent_vertices(const_iterator it) const
     {
-        auto &edges = adjacency_list_.at(it);
-        return std::pair{edges.begin(), edges.end()};
+        return adjacency_list_.at(it);
     }
 
     // O(V)
@@ -258,7 +258,7 @@ struct graph_traits<Directed_Graph<T>>
     static size_type n_vertices(const Directed_Graph<T> &g) { return g.n_vertices(); }
 
     static auto adjacent_vertices(const Directed_Graph<T> &g, vertex_iterator it)
-           -> std::pair<edge_iterator, edge_iterator>
+           -> std::ranges::subrange<edge_iterator>
     {
         return g.adjacent_vertices(it);
     }

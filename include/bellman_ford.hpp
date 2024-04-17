@@ -11,6 +11,7 @@ namespace graphs
 {
 
 template<typename G, typename Traits = graph_traits<G>>
+requires std::ranges::forward_range<G>
 class Bellman_Ford final : public SSSP<G, Traits>
 {
     using sssp = SSSP<G, Traits>;
@@ -36,8 +37,7 @@ public:
             {
                 Info_Node &u_info = info_.find(u_it)->second;
 
-                auto [adj_begin, adj_end] = Traits::adjacent_vertices(g, u_it);
-                for (auto v_it : std::ranges::subrange(adj_begin, adj_end))
+                for (auto v_it : Traits::adjacent_vertices(g, u_it))
                 {
                     Info_Node &v_info = info_.find(v_it)->second;
 
@@ -55,8 +55,7 @@ public:
         {
             Info_Node &u_info = info_.find(u_it)->second;
 
-            auto [adj_begin, adj_end] = Traits::adjacent_vertices(g, u_it);
-            for (auto v_it : std::ranges::subrange(adj_begin, adj_end))
+            for (auto v_it : Traits::adjacent_vertices(g, u_it))
             {
                 Info_Node &v_info = info_.find(v_it)->second;
 

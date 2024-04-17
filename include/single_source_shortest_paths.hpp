@@ -16,6 +16,7 @@ namespace graphs
 {
 
 template<typename G, typename Traits = graph_traits<G>>
+requires std::ranges::forward_range<G>
 class SSSP // single-source shortest paths
 {
 public:

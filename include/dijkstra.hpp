@@ -22,6 +22,7 @@ struct Negative_Weights : public std::logic_error
 };
 
 template<typename G, typename Traits = graph_traits<G>>
+requires std::ranges::forward_range<G>
 class Dijkstra final : public SSSP<G, Traits>
 {
     using sssp = SSSP<G, Traits>;
@@ -69,8 +70,7 @@ public:
             // we are sure that find() returns a valid iterator; no need for at()
             Info_Node &u_info = info_.find(u_it)->second;
 
-            auto [begin, end] = Traits::adjacent_vertices(g, u_it);
-            for (auto v_it : std::ranges::subrange(begin, end))
+            for (auto v_it : Traits::adjacent_vertices(g, u_it))
             {
                 // we are sure that find() returns a valid iterator; no need for at()
                 Info_Node &v_info = info_.find(v_it)->second;
@@ -95,9 +95,8 @@ public:
         for (auto u_it = std::ranges::begin(g), ite = std::ranges::end(g); u_it != ite; ++u_it)
         {
             auto cond = [&g, u_it](auto v_it){ return Traits::weight(g, u_it, v_it) < 0; };
-            auto [from, to] = Traits::adjacent_vertices(g, u_it);
 
-            if (std::ranges::any_of(from, to, cond))
+            if (std::ranges::any_of(Traits::adjacent_vertices(g, u_it), cond))
                 return true;
         }
 

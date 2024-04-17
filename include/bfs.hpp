@@ -83,8 +83,7 @@ public:
             // we are sure that find() returns a valid iterator; no need for at()
             const Info_Node &u_info = bfs_info.find(u_it)->second;
 
-            auto [begin, end] = Traits::adjacent_vertices(g, u_it);
-            for (auto v_it : std::ranges::subrange(begin, end))
+            for (auto v_it : Traits::adjacent_vertices(g, u_it))
             {
                 // we are sure that find() returns a valid iterator; no need for at()
                 Info_Node &v_info = bfs_info.find(v_it)->second;

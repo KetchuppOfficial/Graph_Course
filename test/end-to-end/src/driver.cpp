@@ -108,7 +108,7 @@ int main()
 {
     auto graph = read_graph(std::cin);
 
-    #if defined(DFS)
+    #if defined(TEST_DFS)
     test_dfs(graph);
     #elif defined(GRAPHIC)
     graph.graphic_dump(std::cout);

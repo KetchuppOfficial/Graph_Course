@@ -80,8 +80,7 @@ public:
                         u_info.color_ = Color::gray;
                         u_info.dfs_node_.discovery_time_ = ++time;
 
-                        auto [begin, end] = Traits::adjacent_vertices(g, u_it);
-                        for (auto v_it : std::ranges::subrange(begin, end))
+                        for (auto v_it : Traits::adjacent_vertices(g, u_it))
                         {
                             // we are sure that find() returns a valid iterator; no need for at()
                             Info_Node &v_info = dfs_info.find(v_it)->second;
@@ -181,8 +180,7 @@ private:
         u_info.dfs_node_.discovery_time_ = ++time;
         u_info.color_ = Color::gray;
 
-        auto [begin, end] = Traits::adjacent_vertices(g, u_it);
-        for (auto v_it : std::ranges::subrange(begin, end))
+        for (auto v_it : Traits::adjacent_vertices(g, u_it))
         {
             // we are sure that find() returns a valid iterator; no need for at()
             Info_Node &v_info = dfs_info.find(v_it)->second;

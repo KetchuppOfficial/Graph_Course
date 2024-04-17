@@ -17,6 +17,7 @@ namespace graphs
 {
 
 template<typename G, typename Traits = graph_traits<G>>
+requires std::ranges::forward_range<G>
 class Johnson final
 {
     using weight_type = typename Traits::weight_type;
@@ -75,8 +76,7 @@ private:
         {
             weight_type h_u = bellman_ford.distance(u_it).value();
 
-            auto [adj_begin, adj_end] = Traits::adjacent_vertices(g, u_it);
-            for (auto v_it : std::ranges::subrange(adj_begin, adj_end))
+            for (auto v_it : Traits::adjacent_vertices(g, u_it))
             {
                 weight_type h_v = bellman_ford.distance(v_it).value();
                 g.change_weight(u_it, v_it, op(g.weight(u_it, v_it), h_u - h_v));

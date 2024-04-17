@@ -13,10 +13,10 @@ target_include_directories(graphic_dump
                            PRIVATE ${INCLUDE_DIR})
 
 target_compile_definitions(driver
-                           PRIVATE DFS)
+                           PRIVATE TEST_DFS)
 
 target_compile_definitions(recursive_driver
-                           PRIVATE DFS RECURSIVE)
+                           PRIVATE TEST_DFS RECURSIVE)
 
 target_compile_definitions(graphic_dump
                            PRIVATE GRAPHIC)

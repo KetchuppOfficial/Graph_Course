@@ -36,8 +36,8 @@ struct graph_traits
  * static size_type n_edges(const G &g)
  *     - returns the number of edges in the graph
  *
- * static std::pair<edge_iterator, edge_iterator> adjacent_vertices(const G &g, vertex_iterator i)
- *     - returns pair of iterators over a range of iterators over adjacent nodes of i
+ * static std::ranges::subrange<edge_iterator> adjacent_vertices(const G &g, vertex_iterator i)
+ *     - returns a range of iterators over adjacent nodes of i
  *
  * static weight_type weight(const G &g, vertex_iterator from, vertex_iterator to)
  *     - returns weight of the edge connecting "from" with "to".
