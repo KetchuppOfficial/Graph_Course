@@ -210,7 +210,7 @@ public:
 
     // graphic dump in dot format
 
-    void graphic_dump(std::ostream &os)
+    void graphic_dump(std::ostream &os) const
     {
         os << "digraph G\n"
               "{\n";
@@ -223,7 +223,8 @@ public:
         for (auto &[from_it, edges] : adjacency_list_)
             for (auto to_it : edges)
                 os << "    node_" << std::addressof(*from_it)
-                   << " -> node_" << std::addressof(*to_it) << ";\n";
+                   << " -> node_" << std::addressof(*to_it)
+                   << " [label = \"" << weights_.at(std::pair{from_it, to_it}) << "\"];\n";
 
         os << "}\n";
     }
