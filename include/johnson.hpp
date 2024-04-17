@@ -16,7 +16,7 @@
 namespace graphs
 {
 
-template<typename G, typename Traits = graph_traits<G>>
+template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
 requires std::ranges::forward_range<G>
 class Johnson final
 {

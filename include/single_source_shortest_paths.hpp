@@ -4,7 +4,6 @@
 #include <optional>
 #include <iterator>
 #include <cstddef>
-#include <bit>
 #include <unordered_map>
 #include <vector>
 #include <algorithm>
@@ -15,14 +14,18 @@
 namespace graphs
 {
 
-template<typename G, typename Traits = graph_traits<G>>
+template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
 requires std::ranges::forward_range<G>
 class SSSP // single-source shortest paths
 {
 public:
 
     using distance_type = Distance<typename Traits::weight_type>;
+
+protected:
+
     using vertex_iterator = typename Traits::vertex_iterator;
+    using iterator_hash = typename Traits::iterator_hash;
 
     struct Info_Node final
     {
@@ -33,45 +36,23 @@ public:
         Info_Node(typename Traits::weight_type d) : distance_{d} {}
     };
 
-protected:
-
     // No need in virtual destructor since the only constructor is protected
     SSSP(const G &g, vertex_iterator source_it)
     {
         info_.reserve(Traits::n_vertices(g));
 
         for (auto it = std::ranges::begin(g); it != source_it; ++it)
-            info_.emplace(it, Info_Node{});
+            info_.try_emplace(it);
 
-        info_.emplace(source_it, Info_Node{0});
+        info_.try_emplace(source_it, 0);
 
         for (auto it = std::next(source_it), ite = std::ranges::end(g); it != ite; ++it)
-            info_.emplace(it, Info_Node{});
+            info_.try_emplace(it);
     }
-
-    using iterator_hash = typename Traits::iterator_hash;
-    using info_table_type = std::unordered_map<vertex_iterator,
-                            Info_Node,
-                            iterator_hash>;
 
 public:
 
-    using iterator = typename info_table_type::iterator;
-    using const_iterator = typename info_table_type::const_iterator;
-
-    iterator begin() { return info_.begin(); }
-    const_iterator begin() const { return info_.begin(); }
-    const_iterator cbegin() const { return begin(); }
-
-    iterator end() { return info_.end(); }
-    const_iterator end() const { return info_.end(); }
-    const_iterator cend() const { return end(); }
-
-    distance_type distance(vertex_iterator u_it) const
-    {
-        auto &info_node = info_.at(u_it);
-        return info_node.distance_;
-    }
+    distance_type distance(vertex_iterator u_it) const { return info_.at(u_it).distance_; }
 
     std::vector<vertex_iterator> path_to(vertex_iterator u_it) const
     {
@@ -79,21 +60,19 @@ public:
         if (u_d.is_inf())
             return {};
 
-        std::vector<vertex_iterator> path_{u_it};
+        std::vector path{u_it};
 
-        auto it = u_it;
-        auto predecessor = info_.find(it)->second.predecessor_;
-        while (predecessor.has_value())
+        for (auto predecessor = info_.find(u_it)->second.predecessor_; predecessor.has_value();)
         {
-            it = predecessor.value();
-            predecessor = info_.find(it)->second.predecessor_;
+            u_it = predecessor.value();
+            predecessor = info_.find(u_it)->second.predecessor_;
 
-            path_.push_back(it);
+            path.push_back(u_it);
         }
 
-        std::ranges::reverse(path_);
+        std::ranges::reverse(path);
 
-        return path_;
+        return path;
     }
 
 protected:

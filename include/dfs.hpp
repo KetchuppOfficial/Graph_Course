@@ -20,50 +20,44 @@ template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
 requires std::ranges::forward_range<G>
 class DFS final
 {
-    using vertex_iterator = typename Traits::vertex_iterator;
-    using iterator_hash = typename Traits::iterator_hash;
-    using stack_type = std::stack<vertex_iterator, std::vector<vertex_iterator>>;
-
 public:
 
     using time_type = std::size_t;
 
-    struct DFS_Node final
+private:
+
+    using vertex_iterator = typename Traits::vertex_iterator;
+    using iterator_hash = typename Traits::iterator_hash;
+    using stack_type = std::stack<vertex_iterator, std::vector<vertex_iterator>>;
+
+    enum class Color { white, gray };
+
+    struct Info_Node final
     {
         std::optional<vertex_iterator> predecessor_;
         time_type discovery_time_;
         time_type finished_time_;
     };
 
-private:
+    using color_table_type = std::unordered_map<vertex_iterator,
+                                                Color,
+                                                iterator_hash>;
 
-    enum class Color { white, gray };
-
-    struct Info_Node final
-    {
-        DFS_Node dfs_node_;
-        Color color_{Color::white};
-    };
-
-    using table_type = std::unordered_map<vertex_iterator, DFS_Node, iterator_hash>;
+    using info_table_type = std::unordered_map<vertex_iterator,
+                                               Info_Node,
+                                               iterator_hash>;
 
 public:
 
-    using iterator = typename table_type::iterator;
-    using const_iterator = typename table_type::iterator;
-
     DFS(const G &g)
     {
-        auto dfs_info = dfs_init(g);
+        auto color_table = dfs_init(g);
         time_type time = 0;
 
         // s_ stands for "source"
         for (auto s_it = std::ranges::begin(g), ite = std::ranges::end(g); s_it != ite; ++s_it)
         {
-            // we are sure that find() returns a valid iterator; no need for at()
-            Info_Node &s_info = dfs_info.find(s_it)->second;
-
-            if (s_info.color_ == Color::white)
+            if (color_table[s_it] == Color::white)
             {
                 stack_type stack;
                 stack.push(s_it);
@@ -71,54 +65,42 @@ public:
                 while(!stack.empty())
                 {
                     vertex_iterator u_it = stack.top();
+                    Info_Node &u_info = info_.find(u_it)->second;
 
-                    // we are sure that find() return a valid iterator; no need for at()
-                    Info_Node &u_info = dfs_info.find(u_it)->second;
-
-                    if (u_info.color_ == Color::white)
+                    if (color_table[u_it] == Color::white)
                     {
-                        u_info.color_ = Color::gray;
-                        u_info.dfs_node_.discovery_time_ = ++time;
+                        color_table[u_it] = Color::gray;
+
+                        u_info.discovery_time_ = ++time;
 
                         for (auto v_it : Traits::adjacent_vertices(g, u_it))
                         {
-                            // we are sure that find() returns a valid iterator; no need for at()
-                            Info_Node &v_info = dfs_info.find(v_it)->second;
-
-                            if (v_info.color_ == Color::white)
+                            if (color_table[v_it] == Color::white)
                             {
-                                v_info.dfs_node_.predecessor_ = u_it;
+                                Info_Node &v_info = info_.find(v_it)->second;
+                                v_info.predecessor_ = u_it;
                                 stack.push(v_it);
                             }
                         }
                     }
                     else
                     {
-                        u_info.dfs_node_.finished_time_ = ++time;
+                        u_info.finished_time_ = ++time;
                         stack.pop();
                     }
                 }
             }
         }
-
-        fill_dfs_table(dfs_info);
     }
 
     DFS(const G &g, recursive)
     {
-        auto dfs_info = dfs_init(g);
+        auto color_table = dfs_init(g);
         time_type time = 0;
 
         for (auto s_it = std::ranges::begin(g), ite = std::ranges::end(g); s_it != ite; ++s_it)
-        {
-            // we are sure that find() returns a valid iterator; no need for at()
-            Info_Node &s_info = dfs_info.find(s_it)->second;
-
-            if (s_info.color_ == Color::white)
-                time = visit(g, s_it, dfs_info, time);
-        }
-
-        fill_dfs_table(dfs_info);
+            if (color_table[s_it] == Color::white)
+                time = visit(g, info_, color_table, s_it, time);
     }
 
     void graphic_dump(std::ostream &os)
@@ -126,78 +108,67 @@ public:
         os << "digraph G\n"
               "{\n";
 
-        for (auto &[vertex_it, dfs_info] : dfs_table_)
+        for (auto &[vertex_it, info] : info_)
             os << "    node_" << std::addressof(*vertex_it) << " [shape = record, label = \"key: "
-               << *vertex_it << " | " << dfs_info.discovery_time_ << '/' << dfs_info.finished_time_
+               << *vertex_it << " | " << info.discovery_time_ << '/' << info.finished_time_
                << "\"];\n";
 
         os << '\n';
 
-        for (auto &[vertex_it, dfs_info] : dfs_table_)
-            if (dfs_info.predecessor_.has_value())
-                os << "    node_" << std::addressof(*dfs_info.predecessor_.value())
+        for (auto &[vertex_it, info] : info_)
+            if (info.predecessor_.has_value())
+                os << "    node_" << std::addressof(*info.predecessor_.value())
                    << " -> node_" << std::addressof(*vertex_it) << ";\n";
 
         os << "}\n";
     }
 
-    iterator begin() { return dfs_table_.begin(); }
-    const_iterator begin() const { return dfs_table_.begin(); }
-    const_iterator cbegin() const { return begin(); }
-
-    iterator end() { return dfs_table_.end(); }
-    const_iterator end() const { return dfs_table_.end(); }
-    const_iterator cend() const { return end(); }
-
 private:
 
-    using info_table_type = std::unordered_map<vertex_iterator, Info_Node, iterator_hash>;
-
-    info_table_type dfs_init(const G &g)
+    color_table_type dfs_init(const G &g)
     {
-        info_table_type dfs_info;
-        dfs_info.reserve(Traits::n_vertices(g));
+        color_table_type color_table;
+
+        auto n_vertices = Traits::n_vertices(g);
+        info_.reserve(n_vertices);
+        color_table.reserve(n_vertices);
 
         for (auto it = std::ranges::begin(g), ite = std::ranges::end(g); it != ite; ++it)
-            dfs_info.emplace(it, Info_Node{});
+        {
+            info_.try_emplace(it);
+            color_table.try_emplace(it, Color::white);
+        }
 
-        return dfs_info;
+        return color_table;
     }
 
-    void fill_dfs_table(const info_table_type &dfs_info)
+    static time_type visit(const G &g, info_table_type &info, color_table_type &color_table,
+                           vertex_iterator u_it, time_type time)
     {
-        dfs_table_.reserve(dfs_info.size());
-        for (auto &[vertex_it, info_node] : dfs_info)
-            dfs_table_.emplace(vertex_it, info_node.dfs_node_);
-    }
+        color_table[u_it] = Color::gray;
 
-    static time_type visit(const G& g, vertex_iterator u_it,
-                           info_table_type &dfs_info, time_type time)
-    {
-        // we are sure that find() returns a valid iterator; no need for at()
-        Info_Node &u_info = dfs_info.find(u_it)->second;
-
-        u_info.dfs_node_.discovery_time_ = ++time;
-        u_info.color_ = Color::gray;
+        Info_Node &u_info = info.find(u_it)->second;
+        u_info.discovery_time_ = ++time;
 
         for (auto v_it : Traits::adjacent_vertices(g, u_it))
         {
-            // we are sure that find() returns a valid iterator; no need for at()
-            Info_Node &v_info = dfs_info.find(v_it)->second;
-
-            if (v_info.color_ == Color::white)
+            if (color_table[v_it] == Color::white)
             {
-                v_info.dfs_node_.predecessor_ = u_it;
-                time = visit(g, v_it, dfs_info, time);
+                Info_Node &v_info = info.find(v_it)->second;
+                v_info.predecessor_ = u_it;
+
+                time = visit(g, info, color_table, v_it, time);
             }
         }
 
-        u_info.dfs_node_.finished_time_ = ++time;
+        u_info.finished_time_ = ++time;
 
         return time;
     }
 
-    table_type dfs_table_;
+    std::unordered_map<vertex_iterator,
+                       Info_Node,
+                       iterator_hash> info_;
 };
 
 } // namespace graphs

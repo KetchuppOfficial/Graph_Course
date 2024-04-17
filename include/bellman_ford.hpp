@@ -10,20 +10,18 @@
 namespace graphs
 {
 
-template<typename G, typename Traits = graph_traits<G>>
+template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
 requires std::ranges::forward_range<G>
 class Bellman_Ford final : public SSSP<G, Traits>
 {
     using sssp = SSSP<G, Traits>;
     using sssp::info_;
+    using Info_Node = typename sssp::Info_Node;
+    using vertex_iterator = typename sssp::vertex_iterator;
 
 public:
 
     using distance_type = typename sssp::distance_type;
-    using vertex_iterator = typename sssp::vertex_iterator;
-    using Info_Node = typename sssp::Info_Node;
-    using iterator = typename sssp::iterator;
-    using const_iterator = typename sssp::iterator;
 
     Bellman_Ford(const G &g, vertex_iterator source_it) : sssp{g, source_it}
     {

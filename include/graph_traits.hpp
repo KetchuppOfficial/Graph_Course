@@ -8,7 +8,7 @@ namespace graphs
 
 // struct graph_traits must be specialized by different graph types
 
-template<typename G>
+template<typename G> // G stands for "graph"
 requires std::ranges::forward_range<G>
 struct graph_traits
 {

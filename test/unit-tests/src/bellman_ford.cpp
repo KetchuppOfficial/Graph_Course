@@ -92,7 +92,6 @@ TEST(Bellman_Ford, Nonunique_Paths)
 
     EXPECT_FALSE(sssp2);
     EXPECT_TRUE(sssp2.has_negative_weight_cycles());
-    EXPECT_EQ(sssp2.begin(), sssp2.end());
 }
 
 TEST(Bellman_Ford, Negative_Weights)

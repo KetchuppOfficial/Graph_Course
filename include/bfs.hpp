@@ -6,6 +6,8 @@
 #include <queue>
 #include <unordered_map>
 #include <iterator>
+#include <vector>
+#include <algorithm>
 
 #include "graph_traits.hpp"
 #include "distance.hpp"
@@ -36,10 +38,6 @@ private:
         Info_Node() = default;
         Info_Node(std::size_t distance) : distance_{distance} {}
     };
-
-    using info_table_type = std::unordered_map<vertex_iterator,
-                                               Info_Node,
-                                               iterator_hash>;
 
     using color_table_type = std::unordered_map<vertex_iterator,
                                                 Color,
@@ -77,18 +75,28 @@ public:
         }
     }
 
-    using iterator = typename info_table_type::iterator;
-    using const_iterator = typename info_table_type::const_iterator;
-
-    iterator begin() { return info_.begin(); }
-    const_iterator begin() const { return info_.begin(); }
-    const_iterator cbegin() const { return begin(); }
-
-    iterator end() { return info_.end(); }
-    const_iterator end() const { return info_.end(); }
-    const_iterator cend() const { return end(); }
-
     distance_type distance(vertex_iterator u_it) const { return info_.at(u_it).distance_; }
+
+    std::vector<vertex_iterator> path_to(vertex_iterator u_it) const
+    {
+        distance_type u_d = distance(u_it);
+        if (u_d.is_inf())
+            return {};
+
+        std::vector path{u_it};
+
+        for (auto predecessor = info_.find(u_it)->second.predecessor_; predecessor.has_value();)
+        {
+            u_it = predecessor.value();
+            predecessor = info_.find(u_it)->second.predecessor_;
+
+            path.push_back(u_it);
+        }
+
+        std::ranges::reverse(path);
+
+        return path;
+    }
 
 private:
 
@@ -118,7 +126,9 @@ private:
         return color_table;
     }
 
-    info_table_type info_;
+    std::unordered_map<vertex_iterator,
+                       Info_Node,
+                       iterator_hash> info_;
 };
 
 } // namespace graphs

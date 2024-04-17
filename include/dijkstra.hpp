@@ -21,7 +21,7 @@ struct Negative_Weights : public std::logic_error
                            "for graphs with non-negative weights"} {};
 };
 
-template<typename G, typename Traits = graph_traits<G>>
+template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
 requires std::ranges::forward_range<G>
 class Dijkstra final : public SSSP<G, Traits>
 {
@@ -33,8 +33,6 @@ public:
     using distance_type = typename sssp::distance_type;
     using vertex_iterator = typename sssp::vertex_iterator;
     using Info_Node = typename sssp::Info_Node;
-    using iterator = typename sssp::iterator;
-    using const_iterator = typename sssp::iterator;
 
 private:
 
@@ -67,12 +65,10 @@ public:
             auto [u_it, u_d] = Q.top();
             Q.pop();
 
-            // we are sure that find() returns a valid iterator; no need for at()
             Info_Node &u_info = info_.find(u_it)->second;
 
             for (auto v_it : Traits::adjacent_vertices(g, u_it))
             {
-                // we are sure that find() returns a valid iterator; no need for at()
                 Info_Node &v_info = info_.find(v_it)->second;
 
                 if (distance_type d = u_info.distance_ + Traits::weight(g, u_it, v_it);
