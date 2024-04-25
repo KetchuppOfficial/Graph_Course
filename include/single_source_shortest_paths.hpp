@@ -36,7 +36,6 @@ protected:
         Info_Node(typename Traits::weight_type d) : distance_{d} {}
     };
 
-    // No need in virtual destructor since the only constructor is protected
     SSSP(const G &g, vertex_iterator source_it)
     {
         info_.reserve(Traits::n_vertices(g));
@@ -49,6 +48,9 @@ protected:
         for (auto it = std::next(source_it), ite = std::ranges::end(g); it != ite; ++it)
             info_.try_emplace(it);
     }
+
+    // No need in virtual destructor since the destructor is protected
+    ~SSSP() = default;
 
 public:
 
