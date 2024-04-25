@@ -8,10 +8,19 @@
 #include "graph.hpp"
 #include "dijkstra.hpp"
 
+TEST(Dijkstra, Member_Types)
+{
+    using G = graphs::Directed_Graph<char>;
+
+    static_assert(std::is_same_v<graphs::Distance<int>, graphs::Dijkstra<G>::distance_type>);
+}
+
 TEST(Dijkstra, Unique_Paths)
 {
-    graphs::Directed_Graph<char> g;
-    using iterator = decltype(g)::iterator;
+    using G = graphs::Directed_Graph<char>;
+    using iterator = graphs::graph_traits<G>::vertex_iterator;
+
+    G g;
 
     auto vertices = {'a', 'b', 'c', 'd', 'e', 'f'};
 
@@ -53,8 +62,10 @@ TEST(Dijkstra, Unique_Paths)
 // Example from "Introduction to Algorithms" by Thomas H. Cormen and others
 TEST(Dijkstra, Nonunique_Paths)
 {
-    graphs::Directed_Graph<char> g;
-    using iterator = decltype(g)::iterator;
+    using G = graphs::Directed_Graph<char>;
+    using iterator = graphs::graph_traits<G>::vertex_iterator;
+
+    G g;
 
     auto vertices = {'s', 't', 'x', 'y', 'z'};
 
@@ -83,10 +94,10 @@ TEST(Dijkstra, Nonunique_Paths)
 
 TEST(Dijkstra, Negative_Weights)
 {
-    using graph_type = graphs::Directed_Graph<char>;
-    using iterator = typename graph_type::iterator;
+    using G = graphs::Directed_Graph<char>;
+    using iterator = graphs::graph_traits<G>::vertex_iterator;
 
-    graph_type g;
+    G g;
 
     auto vertices = {'a', 'b', 'c'};
 
@@ -98,6 +109,6 @@ TEST(Dijkstra, Negative_Weights)
                     {it.at('a'), it.at('c'), 2},
                     {it.at('b'), it.at('c'), -1}});
 
-    EXPECT_TRUE(graphs::Dijkstra<graph_type>::has_negative_weights(g));
+    EXPECT_TRUE(graphs::Dijkstra<G>::has_negative_weights(g));
     EXPECT_THROW((graphs::Dijkstra{g, it.at('a')}), graphs::Negative_Weights);
 }

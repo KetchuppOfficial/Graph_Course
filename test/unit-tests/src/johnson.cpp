@@ -7,8 +7,10 @@
 
 TEST(Johnson, Nonunique_Paths)
 {
-    graphs::Directed_Graph<char> g;
-    using iterator = decltype(g)::iterator;
+    using G = graphs::Directed_Graph<char>;
+    using iterator = graphs::graph_traits<G>::vertex_iterator;
+
+    G g;
 
     auto vertices = {'a', 'b', 'c', 'd'};
 
@@ -59,8 +61,10 @@ TEST(Johnson, Nonunique_Paths)
 // Example from "Introduction to Algorithms" by Thomas H. Cormen and others
 TEST(Johnson, From_Cormen)
 {
-    graphs::Directed_Graph<char> g;
-    using iterator = decltype(g)::iterator;
+    using G = graphs::Directed_Graph<char>;
+    using iterator = graphs::graph_traits<G>::vertex_iterator;
+
+    G g;
 
     auto vertices = {'a', 'b', 'c', 'd', 'e'};
 

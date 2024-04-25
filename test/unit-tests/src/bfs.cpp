@@ -5,8 +5,10 @@
 
 TEST(BFS, From_Cormen)
 {
-    graphs::Directed_Graph<char> g;
-    using iterator = decltype(g)::iterator;
+    using G = graphs::Directed_Graph<char>;
+    using iterator = graphs::graph_traits<G>::vertex_iterator;
+
+    G g;
 
     auto vertices = {'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 

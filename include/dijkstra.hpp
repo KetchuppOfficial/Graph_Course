@@ -27,12 +27,12 @@ class Dijkstra final : public SSSP<G, Traits>
 {
     using sssp = SSSP<G, Traits>;
     using sssp::info_;
+    using vertex_iterator = typename Traits::vertex_iterator;
+    using Info_Node = typename sssp::Info_Node;
 
 public:
 
-    using distance_type = typename sssp::distance_type;
-    using vertex_iterator = typename sssp::vertex_iterator;
-    using Info_Node = typename sssp::Info_Node;
+    using typename sssp::distance_type;
 
 private:
 

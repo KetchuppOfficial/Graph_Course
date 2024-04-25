@@ -8,10 +8,19 @@
 #include "graph.hpp"
 #include "bellman_ford.hpp"
 
+TEST(Bellman_Ford, Member_Types)
+{
+    using G = graphs::Directed_Graph<char>;
+
+    static_assert(std::is_same_v<graphs::Distance<int>, graphs::Bellman_Ford<G>::distance_type>);
+}
+
 TEST(Bellman_Ford, Unique_Paths)
 {
-    graphs::Directed_Graph<char> g;
-    using iterator = decltype(g)::iterator;
+    using G = graphs::Directed_Graph<char>;
+    using iterator = typename graphs::graph_traits<G>::vertex_iterator;
+
+    G g;
 
     auto vertices = {'a', 'b', 'c', 'd', 'e', 'f'};
 
@@ -56,8 +65,10 @@ TEST(Bellman_Ford, Unique_Paths)
 // Example from "Introduction to Algorithms" by Thomas H. Cormen and others
 TEST(Bellman_Ford, Nonunique_Paths)
 {
-    graphs::Directed_Graph<char> g;
-    using iterator = decltype(g)::iterator;
+    using G = graphs::Directed_Graph<char>;
+    using iterator = typename graphs::graph_traits<G>::vertex_iterator;
+
+    G g;
 
     auto vertices = {'s', 't', 'x', 'y', 'z'};
 
@@ -96,8 +107,10 @@ TEST(Bellman_Ford, Nonunique_Paths)
 
 TEST(Bellman_Ford, Negative_Weights)
 {
-    graphs::Directed_Graph<char> g;
-    using iterator = decltype(g)::iterator;
+    using G = graphs::Directed_Graph<char>;
+    using iterator = typename graphs::graph_traits<G>::vertex_iterator;
+
+    G g;
 
     auto vertices = {'a', 'b', 'c'};
 

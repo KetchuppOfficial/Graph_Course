@@ -17,13 +17,12 @@ class Bellman_Ford final : public SSSP<G, Traits>
     using sssp = SSSP<G, Traits>;
     using sssp::info_;
     using Info_Node = typename sssp::Info_Node;
-    using vertex_iterator = typename sssp::vertex_iterator;
 
 public:
 
-    using distance_type = typename sssp::distance_type;
+    using typename sssp::distance_type;
 
-    Bellman_Ford(const G &g, vertex_iterator source_it) : sssp{g, source_it}
+    Bellman_Ford(const G &g, typename Traits::vertex_iterator source_it) : sssp{g, source_it}
     {
         auto n_vertices = Traits::n_vertices(g);
         auto begin = std::ranges::begin(g);
