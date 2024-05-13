@@ -100,7 +100,7 @@ public:
 
         for (auto s_it = std::ranges::begin(g), ite = std::ranges::end(g); s_it != ite; ++s_it)
             if (color_table[s_it] == Color::white)
-                time = visit(g, info_, color_table, s_it, time);
+                time = visit(g, color_table, s_it, time);
     }
 
     void graphic_dump(std::ostream &os)
@@ -142,22 +142,21 @@ private:
         return color_table;
     }
 
-    static time_type visit(const G &g, info_table_type &info, color_table_type &color_table,
-                           vertex_iterator u_it, time_type time)
+    time_type visit(const G &g, color_table_type &color_table, vertex_iterator u_it, time_type time)
     {
         color_table[u_it] = Color::gray;
 
-        Info_Node &u_info = info.find(u_it)->second;
+        Info_Node &u_info = info_.find(u_it)->second;
         u_info.discovery_time_ = ++time;
 
         for (auto v_it : Traits::adjacent_vertices(g, u_it))
         {
             if (color_table[v_it] == Color::white)
             {
-                Info_Node &v_info = info.find(v_it)->second;
+                Info_Node &v_info = info_.find(v_it)->second;
                 v_info.predecessor_ = u_it;
 
-                time = visit(g, info, color_table, v_it, time);
+                time = visit(g, color_table, v_it, time);
             }
         }
 
