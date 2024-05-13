@@ -103,6 +103,10 @@ public:
                 time = visit(g, color_table, s_it, time);
     }
 
+    time_type discovery_time(vertex_iterator it) const { return info_.at(it).discovery_time_; }
+
+    time_type finished_time(vertex_iterator it) const { return info_.at(it).finished_time_; }
+
     void graphic_dump(std::ostream &os)
     {
         os << "digraph G\n"
