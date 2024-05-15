@@ -113,16 +113,17 @@ public:
               "{\n";
 
         for (auto &[vertex_it, info] : info_)
-            os << "    node_" << std::addressof(*vertex_it) << " [shape = record, label = \"key: "
-               << *vertex_it << " | " << info.discovery_time_ << '/' << info.finished_time_
-               << "\"];\n";
+            std::println(os, "    node_{} [shape = record, label = \"key: {} | {}/{}\"];",
+                         static_cast<const void *>(std::addressof(*vertex_it)),
+                         *vertex_it, info.discovery_time_, info.finished_time_);
 
         os << '\n';
 
         for (auto &[vertex_it, info] : info_)
             if (info.predecessor_.has_value())
-                os << "    node_" << std::addressof(*info.predecessor_.value())
-                   << " -> node_" << std::addressof(*vertex_it) << ";\n";
+                std::println(os, "    node_{} -> node_{};",
+                             static_cast<const void *>(std::addressof(*info.predecessor_.value())),
+                             static_cast<const void *>(std::addressof(*vertex_it)));
 
         os << "}\n";
     }

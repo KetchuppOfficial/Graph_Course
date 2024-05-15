@@ -216,15 +216,17 @@ public:
               "{\n";
 
         for (auto &node : vertices_)
-            os << "    node_" << std::addressof(node) << " [label = \"" << node << "\"];\n";
+            std::println(os, "    node_{} [label = \"{}\"];",
+                         static_cast<const void *>(std::addressof(node)), node);
 
         os << '\n';
 
         for (auto &[from_it, edges] : adjacency_list_)
             for (auto to_it : edges)
-                os << "    node_" << std::addressof(*from_it)
-                   << " -> node_" << std::addressof(*to_it)
-                   << " [label = \"" << weights_.at(std::pair{from_it, to_it}) << "\"];\n";
+                std::println(os, "    node_{} -> node_{} [label = \"{}\"];",
+                             static_cast<const void *>(std::addressof(*from_it)),
+                             static_cast<const void *>(std::addressof(*to_it)),
+                             weights_.at(std::pair{from_it, to_it}));
 
         os << "}\n";
     }
