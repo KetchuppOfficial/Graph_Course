@@ -6,13 +6,13 @@
 TEST(BFS, From_Cormen)
 {
     using G = graphs::Directed_Graph<char>;
-    using iterator = graphs::graph_traits<G>::vertex_iterator;
+    using size_type = graphs::graph_traits<G>::size_type;
 
     G g;
 
     auto vertices = {'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
-    std::unordered_map<char, iterator> it;
+    std::unordered_map<char, size_type> it;
     for (auto v : vertices)
         it.emplace(v, g.insert_vertex(v));
 

@@ -1,13 +1,12 @@
 #ifndef INCLUDE_DFS_HPP
 #define INCLUDE_DFS_HPP
 
-#include <ranges>
+#include <cstddef>
 #include <stack>
 #include <vector>
-#include <optional>
 #include <unordered_map>
-#include <ostream>
-#include <memory>
+#include <optional>
+#include <ranges>
 
 #include "graph_traits.hpp"
 
@@ -17,7 +16,6 @@ namespace graphs
 struct recursive final {}; // a tag to be used if you want to run dfs recursively
 
 template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
-requires std::ranges::forward_range<G>
 class DFS final
 {
 public:
@@ -26,26 +24,19 @@ public:
 
 private:
 
-    using vertex_iterator = typename Traits::vertex_iterator;
-    using iterator_hash = typename Traits::iterator_hash;
-    using stack_type = std::stack<vertex_iterator, std::vector<vertex_iterator>>;
+    using size_type = typename Traits::size_type;
+    using stack_type = std::stack<size_type, std::vector<size_type>>;
 
     enum class Color { white, gray };
 
+    using color_table_type = std::unordered_map<size_type, Color>;
+
     struct Info_Node final
     {
-        std::optional<vertex_iterator> predecessor_;
+        std::optional<size_type> predecessor_;
         time_type discovery_time_;
         time_type finished_time_;
     };
-
-    using color_table_type = std::unordered_map<vertex_iterator,
-                                                Color,
-                                                iterator_hash>;
-
-    using info_table_type = std::unordered_map<vertex_iterator,
-                                               Info_Node,
-                                               iterator_hash>;
 
 public:
 
@@ -55,31 +46,31 @@ public:
         time_type time = 0;
 
         // s_ stands for "source"
-        for (auto s_it = std::ranges::begin(g), ite = std::ranges::end(g); s_it != ite; ++s_it)
+        for (auto s_i : std::views::iota(size_type{0}, Traits::n_vertices(g)))
         {
-            if (color_table[s_it] == Color::white)
+            if (color_table[s_i] == Color::white)
             {
                 stack_type stack;
-                stack.push(s_it);
+                stack.push(s_i);
 
                 while(!stack.empty())
                 {
-                    vertex_iterator u_it = stack.top();
-                    Info_Node &u_info = info_.find(u_it)->second;
+                    const size_type u_i = stack.top();
+                    Info_Node &u_info = info_.find(u_i)->second;
 
-                    if (color_table[u_it] == Color::white)
+                    if (color_table[u_i] == Color::white)
                     {
-                        color_table[u_it] = Color::gray;
+                        color_table[u_i] = Color::gray;
 
                         u_info.discovery_time_ = ++time;
 
-                        for (auto v_it : Traits::adjacent_vertices(g, u_it))
+                        for (auto v_i : Traits::adjacent_vertices(g, u_i))
                         {
-                            if (color_table[v_it] == Color::white)
+                            if (color_table[v_i] == Color::white)
                             {
-                                Info_Node &v_info = info_.find(v_it)->second;
-                                v_info.predecessor_ = u_it;
-                                stack.push(v_it);
+                                Info_Node &v_info = info_.find(v_i)->second;
+                                v_info.predecessor_ = u_i;
+                                stack.push(v_i);
                             }
                         }
                     }
@@ -98,35 +89,13 @@ public:
         auto color_table = dfs_init(g);
         time_type time = 0;
 
-        for (auto s_it = std::ranges::begin(g), ite = std::ranges::end(g); s_it != ite; ++s_it)
-            if (color_table[s_it] == Color::white)
-                time = visit(g, color_table, s_it, time);
+        for (auto s_i : std::views::iota(size_type{0}, Traits::n_vertices(g)))
+            if (color_table[s_i] == Color::white)
+                time = visit(g, color_table, s_i, time);
     }
 
-    time_type discovery_time(vertex_iterator it) const { return info_.at(it).discovery_time_; }
-
-    time_type finished_time(vertex_iterator it) const { return info_.at(it).finished_time_; }
-
-    void graphic_dump(std::ostream &os)
-    {
-        os << "digraph G\n"
-              "{\n";
-
-        for (auto &[vertex_it, info] : info_)
-            std::println(os, "    node_{} [shape = record, label = \"key: {} | {}/{}\"];",
-                         static_cast<const void *>(std::addressof(*vertex_it)),
-                         *vertex_it, info.discovery_time_, info.finished_time_);
-
-        os << '\n';
-
-        for (auto &[vertex_it, info] : info_)
-            if (info.predecessor_.has_value())
-                std::println(os, "    node_{} -> node_{};",
-                             static_cast<const void *>(std::addressof(*info.predecessor_.value())),
-                             static_cast<const void *>(std::addressof(*vertex_it)));
-
-        os << "}\n";
-    }
+    time_type discovery_time(size_type i) const { return info_.at(i).discovery_time_; }
+    time_type finished_time(size_type i) const { return info_.at(i).finished_time_; }
 
 private:
 
@@ -134,34 +103,34 @@ private:
     {
         color_table_type color_table;
 
-        auto n_vertices = Traits::n_vertices(g);
+        const size_type n_vertices = Traits::n_vertices(g);
         info_.reserve(n_vertices);
         color_table.reserve(n_vertices);
 
-        for (auto it = std::ranges::begin(g), ite = std::ranges::end(g); it != ite; ++it)
+        for (auto i : std::views::iota(size_type{0}, n_vertices))
         {
-            info_.try_emplace(it);
-            color_table.try_emplace(it, Color::white);
+            info_.try_emplace(i);
+            color_table.try_emplace(i, Color::white);
         }
 
         return color_table;
     }
 
-    time_type visit(const G &g, color_table_type &color_table, vertex_iterator u_it, time_type time)
+    time_type visit(const G &g, color_table_type &color_table, size_type u_i, time_type time)
     {
-        color_table[u_it] = Color::gray;
+        color_table[u_i] = Color::gray;
 
-        Info_Node &u_info = info_.find(u_it)->second;
+        Info_Node &u_info = info_.find(u_i)->second;
         u_info.discovery_time_ = ++time;
 
-        for (auto v_it : Traits::adjacent_vertices(g, u_it))
+        for (auto v_i : Traits::adjacent_vertices(g, u_i))
         {
-            if (color_table[v_it] == Color::white)
+            if (color_table[v_i] == Color::white)
             {
-                Info_Node &v_info = info_.find(v_it)->second;
-                v_info.predecessor_ = u_it;
+                Info_Node &v_info = info_.find(v_i)->second;
+                v_info.predecessor_ = u_i;
 
-                time = visit(g, color_table, v_it, time);
+                time = visit(g, color_table, v_i, time);
             }
         }
 
@@ -170,9 +139,7 @@ private:
         return time;
     }
 
-    std::unordered_map<vertex_iterator,
-                       Info_Node,
-                       iterator_hash> info_;
+    std::unordered_map<size_type, Info_Node> info_;
 };
 
 } // namespace graphs

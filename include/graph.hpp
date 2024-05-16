@@ -1,19 +1,18 @@
 #ifndef INCLUDE_GRAPH_HPP
 #define INCLUDE_GRAPH_HPP
 
+#include <cstddef>
 #include <list>
-#include <bit>
-#include <unordered_set>
-#include <initializer_list>
-#include <algorithm>
 #include <iterator>
+#include <algorithm>
+#include <ranges>
+#include <initializer_list>
 #include <numeric>
 #include <utility>
-#include <ostream>
-#include <memory>
-#include <unordered_map>
 #include <tuple>
-#include <ranges>
+#include <ostream>
+#include <unordered_map>
+#include <unordered_set>
 
 #include <boost/container_hash/hash.hpp>
 
@@ -41,48 +40,17 @@ public:
 
     static constexpr weight_type default_weight = 1;
 
-    struct iterator_hash final
-    {
-        std::size_t operator()(const_iterator it) const noexcept
-        {
-            return std::bit_cast<std::size_t>(it);
-        }
-    };
-
-private:
-
-    struct pair_hash final
-    {
-        std::size_t operator()(std::pair<const_iterator, const_iterator> p) const
-        {
-            std::size_t seed = 0;
-            boost::hash_combine(seed, iterator_hash{}(p.first));
-            boost::hash_combine(seed, iterator_hash{}(p.second));
-            return seed;
-        }
-    };
-
-    using edges_cont = std::unordered_set<const_iterator, iterator_hash>;
-
-public:
-
     Directed_Graph() = default;
 
     template<std::input_iterator It>
     Directed_Graph(It first, It last)
     {
         std::ranges::copy(first, last, std::back_inserter(vertices_));
-        for (auto it = begin(), ite = end(); it != ite; ++it)
-            adjacency_list_.emplace(it, edges_cont{});
+        for (auto i : std::views::iota(size_type{0}, n_vertices()))
+            adjacency_list_.try_emplace(i);
     }
 
     Directed_Graph(std::initializer_list<vertex_type> il) : Directed_Graph{il.begin(), il.end()} {}
-
-    Directed_Graph(const Directed_Graph &rhs) = delete;
-    Directed_Graph &operator=(const Directed_Graph &rhs) = delete;
-
-    Directed_Graph(Directed_Graph &&rhs) = default;
-    Directed_Graph &operator=(Directed_Graph &rhs) = default;
 
     size_type n_vertices() const { return vertices_.size(); }
     size_type n_edges() const
@@ -110,102 +78,101 @@ public:
     // Operations on vertices
 
     // O(1)
-    iterator insert_vertex(const_reference v)
+    size_type insert_vertex(const_reference v)
     {
         vertices_.emplace_back(v);
-        auto vertex_it = std::prev(vertices_.end());
-        adjacency_list_.emplace(vertex_it, edges_cont{});
+        const size_type vertex_i = n_vertices() - 1;
+        adjacency_list_.try_emplace(vertex_i);
 
-        return vertex_it;
+        return vertex_i;
     }
 
     // O(V)
-    void erase_vertex(const_iterator it)
+    void erase_vertex(size_type vertex_i)
     {
         for (auto &elem : adjacency_list_)
-            elem.second.erase(it);
+            elem.second.erase(vertex_i);
 
-        adjacency_list_.erase(it);
-        vertices_.erase(it);
+        adjacency_list_.erase(vertex_i);
+        vertices_.erase(std::next(vertices_.begin(), vertex_i));
     }
 
     // Operations on edges
 
     // O(1)
-    void insert_edge(const_iterator from_it, const_iterator to_it, weight_type w = default_weight)
+    void insert_edge(size_type from_i, size_type to_i, weight_type w = default_weight)
     {
-        adjacency_list_[from_it].insert(to_it);
-        weights_.emplace(std::pair{from_it, to_it}, w);
+        adjacency_list_[from_i].insert(to_i);
+        weights_.emplace(std::pair{from_i, to_i}, w);
     }
 
     // O(il.size())
-    void insert_edges(std::initializer_list<std::tuple<const_iterator,
-                                                       const_iterator,
-                                                       weight_type>> il)
+    void insert_edges(std::initializer_list<std::tuple<size_type, size_type, weight_type>> il)
     {
-        for (auto &[from, to, w] : il)
+        for (const auto &[from, to, w] : il)
             insert_edge(from, to, w);
     }
 
     // O(il.size())
-    void insert_edges(std::initializer_list<std::pair<const_iterator,
-                                                      const_iterator>> il)
+    void insert_edges(std::initializer_list<std::pair<size_type, size_type>> il)
     {
-        for (auto &[from, to] : il)
-            insert_edge(from, to, default_weight);
+        for (const auto &[from, to] : il)
+            insert_edge(from, to);
     }
 
     // O(1)
-    void erase_edge(const_iterator from_it, const_iterator to_it)
+    void erase_edge(size_type from_i, size_type to_i)
     {
-        adjacency_list_[from_it].erase(to_it);
-        weights_.erase(std::pair{from_it, to_it});
+        adjacency_list_[from_i].erase(to_i);
+        weights_.erase(std::pair{from_i, to_i});
     }
 
     // O(1)
-    weight_type weight(const_iterator from_it, const_iterator to_it) const
+    weight_type weight(size_type from_i, size_type to_i) const
     {
-        return weights_.at(std::pair{from_it, to_it});
+        return weights_.at(std::pair{from_i, to_i});
     }
 
     // O(1)
-    void change_weight(const_iterator from_it, const_iterator to_it, weight_type new_w)
+    void change_weight(size_type from_i, size_type to_i, weight_type new_w)
     {
-        weights_.at(std::pair{from_it, to_it}) = new_w;
+        weights_.at(std::pair{from_i, to_i}) = new_w;
     }
 
     // Mixed operations
 
     // O(1)
-    bool are_adjacent(const_iterator from_it, const_iterator to_it) const
+    bool are_adjacent(size_type from_i, size_type to_i) const
     {
-        return adjacency_list_.at(from_it).contains(to_it);
+        return adjacency_list_.at(from_i).contains(to_i);
     }
 
-    using edge_iterator = typename edges_cont::const_iterator;
-
     // O(1)
-    std::ranges::subrange<edge_iterator> adjacent_vertices(const_iterator it) const
+    auto adjacent_vertices(size_type vertex_i) const
+        -> std::ranges::subrange<typename std::unordered_set<size_type>::const_iterator>
     {
-        return adjacency_list_.at(it);
+        return adjacency_list_.at(vertex_i);
     }
 
     // O(V)
-    size_type vertex_in_degree(const_iterator it) const
+    std::size_t vertex_in_degree(size_type vertex_i) const
     {
-        return std::ranges::count_if(adjacency_list_, [it](auto &elem)
+        return std::ranges::count_if(adjacency_list_, [vertex_i](auto &elem)
         {
-            return elem.second.contains(it);
+            return elem.second.contains(vertex_i);
         });
     }
 
     // O(1)
-    size_type vertex_out_degree(const_iterator it) const { return adjacency_list_.at(it).size(); }
+    std::size_t vertex_out_degree(size_type vertex_i) const
+    {
+        return adjacency_list_.at(vertex_i).size();
+    }
 
     // O(V)
-    size_type vertex_degree(const_iterator it) const
+    size_type vertex_degree(size_type vertex_i) const
     {
-        return vertex_in_degree(it) + vertex_out_degree(it);
+        return vertex_in_degree(vertex_i) + vertex_out_degree(vertex_i);
     }
 
     // graphic dump in dot format
@@ -215,18 +182,16 @@ public:
         os << "digraph G\n"
               "{\n";
 
-        for (auto &node : vertices_)
-            std::println(os, "    node_{} [label = \"{}\"];",
-                         static_cast<const void *>(std::addressof(node)), node);
+        auto it = begin();
+        for (auto i : std::views::iota(size_type{0}, n_vertices()))
+            std::println(os, "    node_{} [label = \"{}\"];", i, *it++);
 
         os << '\n';
 
-        for (auto &[from_it, edges] : adjacency_list_)
-            for (auto to_it : edges)
-                std::println(os, "    node_{} -> node_{} [label = \"{}\"];",
-                             static_cast<const void *>(std::addressof(*from_it)),
-                             static_cast<const void *>(std::addressof(*to_it)),
-                             weights_.at(std::pair{from_it, to_it}));
+        for (auto &[from_i, edges] : adjacency_list_)
+            for (auto to_i : edges)
+                std::println(os, "    node_{} -> node_{} [label = \"{}\"];", from_i, to_i,
+                             weights_.at(std::pair{from_i, to_i}));
 
         os << "}\n";
     }
@@ -234,13 +199,12 @@ public:
 private:
 
     vertex_cont vertices_;
-    std::unordered_map<const_iterator,
-                       edges_cont,
-                       iterator_hash> adjacency_list_;
+    std::unordered_map<size_type,
+                       std::unordered_set<size_type>> adjacency_list_;
 
-    std::unordered_map<std::pair<const_iterator, const_iterator>,
+    std::unordered_map<std::pair<size_type, size_type>,
                        weight_type,
-                       pair_hash> weights_;
+                       boost::hash<std::pair<size_type, size_type>>> weights_;
 };
 
 template<std::input_iterator It> Directed_Graph(It first, It last)
@@ -249,23 +213,19 @@ template<std::input_iterator It> Directed_Graph(It first, It last)
 template<typename T>
 struct graph_traits<Directed_Graph<T>>
 {
-    using size_type = typename Directed_Graph<T>::size_type;
     using vertex_type = T;
+    using size_type = typename Directed_Graph<T>::size_type;
     using weight_type = typename Directed_Graph<T>::weight_type;
-    using vertex_iterator = typename Directed_Graph<T>::const_iterator;
-    using edge_iterator = typename Directed_Graph<T>::edge_iterator;
-    using iterator_hash = typename Directed_Graph<T>::iterator_hash;
 
     static size_type n_edges(const Directed_Graph<T> &g) { return g.n_edges(); }
     static size_type n_vertices(const Directed_Graph<T> &g) { return g.n_vertices(); }
 
-    static auto adjacent_vertices(const Directed_Graph<T> &g, vertex_iterator it)
-           -> std::ranges::subrange<edge_iterator>
+    static auto adjacent_vertices(const Directed_Graph<T> &g, size_type vertex_i)
     {
-        return g.adjacent_vertices(it);
+        return g.adjacent_vertices(vertex_i);
     }
 
-    static weight_type weight(const Directed_Graph<T> &g, vertex_iterator from, vertex_iterator to)
+    static weight_type weight(const Directed_Graph<T> &g, size_type from, size_type to)
     {
         return g.weight(from, to);
     }

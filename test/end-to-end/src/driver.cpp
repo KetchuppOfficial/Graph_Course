@@ -28,7 +28,7 @@ void check_stream(std::istream &is, int x)
 graphs::Directed_Graph<int> read_graph(std::istream &is)
 {
     graphs::Directed_Graph<int> g;
-    std::unordered_map<int, graphs::Directed_Graph<int>::iterator> map;
+    std::unordered_set<graphs::Directed_Graph<int>::size_type> indexes;
 
     while (true)
     {
@@ -48,10 +48,10 @@ graphs::Directed_Graph<int> read_graph(std::istream &is)
                 is >> v;
                 check_stream(is, v);
 
-                if (map.contains(v))
+                if (indexes.contains(v))
                     throw std::runtime_error{"Vertices must be different in pairs"};
 
-                map.emplace(v, g.insert_vertex(v));
+                indexes.emplace(g.insert_vertex(v));
                 break;
             }
 
@@ -69,7 +69,7 @@ graphs::Directed_Graph<int> read_graph(std::istream &is)
                 is >> w;
                 check_stream(is, w);
 
-                g.insert_edge(map.at(from), map.at(to), w);
+                g.insert_edge(*indexes.find(from), *indexes.find(to), w);
                 break;
             }
 

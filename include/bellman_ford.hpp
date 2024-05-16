@@ -1,7 +1,6 @@
 #ifndef INCLUDE_BELLMAN_FORD_HPP
 #define INCLUDE_BELLMAN_FORD_HPP
 
-#include <iterator>
 #include <ranges>
 
 #include "graph_traits.hpp"
@@ -11,52 +10,50 @@ namespace graphs
 {
 
 template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
-requires std::ranges::forward_range<G>
 class Bellman_Ford final : public SSSP<G, Traits>
 {
     using sssp = SSSP<G, Traits>;
     using sssp::info_;
-    using Info_Node = typename sssp::Info_Node;
+    using typename sssp::size_type;
+    using typename sssp::Info_Node;
 
 public:
 
     using typename sssp::distance_type;
 
-    Bellman_Ford(const G &g, typename Traits::vertex_iterator source_it) : sssp{g, source_it}
+    Bellman_Ford(const G &g, size_type source_i) : sssp{g, source_i}
     {
-        auto n_vertices = Traits::n_vertices(g);
-        auto begin = std::ranges::begin(g);
-        auto end = std::ranges::end(g);
+        const size_type n_vertices = Traits::n_vertices(g);
 
-        for (auto i = 0; i != n_vertices - 1; ++i)
+        for (auto _ : std::views::iota(size_type{0}, n_vertices - 1))
         {
-            for (auto u_it = begin; u_it != end; ++u_it)
+            for (auto u_i : std::views::iota(size_type{0}, n_vertices))
             {
-                Info_Node &u_info = info_.find(u_it)->second;
+                const Info_Node &u_info = info_.find(u_i)->second;
 
-                for (auto v_it : Traits::adjacent_vertices(g, u_it))
+                for (auto v_i : Traits::adjacent_vertices(g, u_i))
                 {
-                    Info_Node &v_info = info_.find(v_it)->second;
+                    Info_Node &v_info = info_.find(v_i)->second;
 
-                    if (distance_type d = u_info.distance_ + Traits::weight(g, u_it, v_it);
+                    if (distance_type d = u_info.distance_ + Traits::weight(g, u_i, v_i);
                         d < v_info.distance_)
                     {
                         v_info.distance_ = d;
-                        v_info.predecessor_ = u_it;
+                        v_info.predecessor_ = u_i;
                     }
                 }
             }
         }
 
-        for (auto u_it = begin; u_it != end; ++u_it)
+        for (auto u_i : std::views::iota(size_type{0}, n_vertices))
         {
-            Info_Node &u_info = info_.find(u_it)->second;
+            const Info_Node &u_info = info_.find(u_i)->second;
 
-            for (auto v_it : Traits::adjacent_vertices(g, u_it))
+            for (auto v_i : Traits::adjacent_vertices(g, u_i))
             {
-                Info_Node &v_info = info_.find(v_it)->second;
+                const Info_Node &v_info = info_.find(v_i)->second;
 
-                if (v_info.distance_ > u_info.distance_ + Traits::weight(g, u_it, v_it))
+                if (v_info.distance_ > u_info.distance_ + Traits::weight(g, u_i, v_i))
                 {
                     info_.clear();
                     return;

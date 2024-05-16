@@ -15,38 +15,35 @@ namespace graphs
 {
 
 template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
-requires std::ranges::forward_range<G>
 class SSSP // single-source shortest paths
 {
-public:
-
-    using distance_type = Distance<typename Traits::weight_type>;
-
 protected:
 
-    using vertex_iterator = typename Traits::vertex_iterator;
-    using iterator_hash = typename Traits::iterator_hash;
+    using size_type = typename Traits::size_type;
+    using weight_type = typename Traits::weight_type;
+    using distance_type = Distance<weight_type>;
 
     struct Info_Node final
     {
         distance_type distance_;
-        std::optional<vertex_iterator> predecessor_;
+        std::optional<size_type> predecessor_;
 
         Info_Node() = default;
-        Info_Node(typename Traits::weight_type d) : distance_{d} {}
+        Info_Node(weight_type d) : distance_{d} {}
     };
 
-    SSSP(const G &g, vertex_iterator source_it)
+    SSSP(const G &g, size_type source_i)
     {
-        info_.reserve(Traits::n_vertices(g));
+        const size_type n_vertices = Traits::n_vertices(g);
+        info_.reserve(n_vertices);
 
-        for (auto it = std::ranges::begin(g); it != source_it; ++it)
-            info_.try_emplace(it);
+        for (auto i : std::views::iota(size_type{0}, source_i))
+            info_.try_emplace(i);
 
-        info_.try_emplace(source_it, 0);
+        info_.try_emplace(source_i, 0);
 
-        for (auto it = std::next(source_it), ite = std::ranges::end(g); it != ite; ++it)
-            info_.try_emplace(it);
+        for (auto i : std::views::iota(source_i + 1, n_vertices))
+            info_.try_emplace(i);
     }
 
     // No need in virtual destructor since the destructor is protected
@@ -54,22 +51,22 @@ protected:
 
 public:
 
-    distance_type distance(vertex_iterator u_it) const { return info_.at(u_it).distance_; }
+    distance_type distance(size_type u_i) const { return info_.at(u_i).distance_; }
 
-    std::vector<vertex_iterator> path_to(vertex_iterator u_it) const
+    std::vector<size_type> path_to(size_type u_i) const
     {
-        distance_type u_d = distance(u_it);
+        distance_type u_d = distance(u_i);
         if (u_d.is_inf())
             return {};
 
-        std::vector path{u_it};
+        std::vector path{u_i};
 
-        for (auto predecessor = info_.find(u_it)->second.predecessor_; predecessor.has_value();)
+        for (auto predecessor = info_.find(u_i)->second.predecessor_; predecessor.has_value();)
         {
-            u_it = predecessor.value();
-            predecessor = info_.find(u_it)->second.predecessor_;
+            u_i = predecessor.value();
+            predecessor = info_.find(u_i)->second.predecessor_;
 
-            path.push_back(u_it);
+            path.push_back(u_i);
         }
 
         std::ranges::reverse(path);
@@ -79,9 +76,7 @@ public:
 
 protected:
 
-    std::unordered_map<vertex_iterator,
-                       Info_Node,
-                       iterator_hash> info_;
+    std::unordered_map<size_type, Info_Node> info_;
 };
 
 } // namespace graphs

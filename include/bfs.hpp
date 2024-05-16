@@ -1,13 +1,13 @@
 #ifndef INCLUDE_BFS_HPP
 #define INCLUDE_BFS_HPP
 
-#include <ranges>
+#include <cstddef>
 #include <optional>
-#include <queue>
 #include <unordered_map>
-#include <iterator>
+#include <queue>
 #include <vector>
 #include <algorithm>
+#include <ranges>
 
 #include "graph_traits.hpp"
 #include "distance.hpp"
@@ -16,7 +16,6 @@ namespace graphs
 {
 
 template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
-requires std::ranges::forward_range<G>
 class BFS final
 {
 public:
@@ -25,72 +24,69 @@ public:
 
 private:
 
-    using vertex_iterator = typename Traits::vertex_iterator;
-    using iterator_hash = typename Traits::iterator_hash;
+    using size_type = typename Traits::size_type;
 
     enum class Color { white, gray };
 
     struct Info_Node final
     {
         distance_type distance_;
-        std::optional<vertex_iterator> predecessor_;
+        std::optional<size_type> predecessor_;
 
         Info_Node() = default;
         Info_Node(std::size_t distance) : distance_{distance} {}
     };
 
-    using color_table_type = std::unordered_map<vertex_iterator,
-                                                Color,
-                                                iterator_hash>;
+    using color_table_type = std::unordered_map<size_type, Color>;
 
 public:
 
-    BFS(const G &g, vertex_iterator source_it)
+    BFS(const G &g, size_type source_i)
     {
-        auto color_table = bfs_init(g, source_it);
+        auto color_table = bfs_init(g, source_i);
 
-        std::queue<vertex_iterator> Q;
-        Q.push(source_it);
+        std::queue<size_type> Q;
+        Q.push(source_i);
 
         while (!Q.empty())
         {
-            vertex_iterator u_it = Q.front();
+            const size_type u_i = Q.front();
             Q.pop();
 
-            const Info_Node &u_info = info_.find(u_it)->second;
+            const Info_Node &u_info = info_.find(u_i)->second;
 
-            for (auto v_it : Traits::adjacent_vertices(g, u_it))
+            for (auto v_i : Traits::adjacent_vertices(g, u_i))
             {
-                if (color_table[v_it] == Color::white)
+                if (color_table[v_i] == Color::white)
                 {
-                    color_table[v_it] = Color::gray;
+                    color_table[v_i] = Color::gray;
 
-                    Info_Node &v_info = info_.find(v_it)->second;
+                    Info_Node &v_info = info_.find(v_i)->second;
                     v_info.distance_ = u_info.distance_ + std::size_t{1};
-                    v_info.predecessor_ = u_it;
+                    v_info.predecessor_ = u_i;
 
-                    Q.push(v_it);
+                    Q.push(v_i);
                 }
             }
         }
     }
 
-    distance_type distance(vertex_iterator u_it) const { return info_.at(u_it).distance_; }
+    distance_type distance(size_type u_i) const { return info_.at(u_i).distance_; }
 
-    std::vector<vertex_iterator> path_to(vertex_iterator u_it) const
+    std::vector<size_type> path_to(size_type u_i) const
     {
-        distance_type u_d = distance(u_it);
+        distance_type u_d = distance(u_i);
         if (u_d.is_inf())
             return {};
 
-        std::vector path{u_it};
+        std::vector path{u_i};
 
-        for (auto predecessor = info_.find(u_it)->second.predecessor_; predecessor.has_value();)
+        for (auto predecessor = info_.find(u_i)->second.predecessor_; predecessor.has_value();)
         {
-            u_it = predecessor.value();
-            predecessor = info_.find(u_it)->second.predecessor_;
+            u_i = predecessor.value();
+            predecessor = info_.find(u_i)->second.predecessor_;
 
-            path.push_back(u_it);
+            path.push_back(u_i);
         }
 
         std::ranges::reverse(path);
@@ -100,35 +96,33 @@ public:
 
 private:
 
-    color_table_type bfs_init(const G &g, vertex_iterator source_it)
+    color_table_type bfs_init(const G &g, size_type source_i)
     {
         color_table_type color_table;
 
-        auto n_vertices = Traits::n_vertices(g);
+        const size_type n_vertices = Traits::n_vertices(g);
         info_.reserve(n_vertices);
         color_table.reserve(n_vertices);
 
-        for (auto it = std::ranges::begin(g); it != source_it; ++it)
+        for (auto i : std::views::iota(size_type{0}, source_i))
         {
-            info_.try_emplace(it);
-            color_table.try_emplace(it, Color::white);
+            info_.try_emplace(i);
+            color_table.try_emplace(i, Color::white);
         }
 
-        info_.try_emplace(source_it, 0);
-        color_table.try_emplace(source_it, Color::gray);
+        info_.try_emplace(source_i, 0);
+        color_table.try_emplace(source_i, Color::gray);
 
-        for (auto it = std::next(source_it); it != std::ranges::end(g); ++it)
+        for (auto i : std::views::iota(source_i + 1, n_vertices))
         {
-            info_.try_emplace(it);
-            color_table.try_emplace(it, Color::white);
+            info_.try_emplace(i);
+            color_table.try_emplace(i, Color::white);
         }
 
         return color_table;
     }
 
-    std::unordered_map<vertex_iterator,
-                       Info_Node,
-                       iterator_hash> info_;
+    std::unordered_map<size_type, Info_Node> info_;
 };
 
 } // namespace graphs

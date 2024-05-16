@@ -18,13 +18,13 @@ TEST(Bellman_Ford, Member_Types)
 TEST(Bellman_Ford, Unique_Paths)
 {
     using G = graphs::Directed_Graph<char>;
-    using iterator = typename graphs::graph_traits<G>::vertex_iterator;
+    using size_type = typename graphs::graph_traits<G>::size_type;
 
     G g;
 
     auto vertices = {'a', 'b', 'c', 'd', 'e', 'f'};
 
-    std::unordered_map<char, iterator> it;
+    std::unordered_map<char, size_type> it;
     for (auto v : vertices)
         it.emplace(v, g.insert_vertex(v));
 
@@ -48,7 +48,7 @@ TEST(Bellman_Ford, Unique_Paths)
     for (auto v : vertices)
         EXPECT_EQ(sssp.distance(it.at(v)), distance.at(v));
 
-    std::unordered_map<char, std::vector<iterator>> ref_path =
+    std::unordered_map<char, std::vector<size_type>> ref_path =
     {
         {'a', std::vector{it.at('a')}},
         {'b', std::vector{it.at('a'), it.at('d'), it.at('b')}},
@@ -66,13 +66,13 @@ TEST(Bellman_Ford, Unique_Paths)
 TEST(Bellman_Ford, Nonunique_Paths)
 {
     using G = graphs::Directed_Graph<char>;
-    using iterator = typename graphs::graph_traits<G>::vertex_iterator;
+    using size_type = typename graphs::graph_traits<G>::size_type;
 
     G g;
 
     auto vertices = {'s', 't', 'x', 'y', 'z'};
 
-    std::unordered_map<char, iterator> it;
+    std::unordered_map<char, size_type> it;
     for (auto v : vertices)
         it.emplace(v, g.insert_vertex(v));
 
@@ -108,13 +108,13 @@ TEST(Bellman_Ford, Nonunique_Paths)
 TEST(Bellman_Ford, Negative_Weights)
 {
     using G = graphs::Directed_Graph<char>;
-    using iterator = typename graphs::graph_traits<G>::vertex_iterator;
+    using size_type = typename graphs::graph_traits<G>::size_type;
 
     G g;
 
     auto vertices = {'a', 'b', 'c'};
 
-    std::unordered_map<char, iterator> it;
+    std::unordered_map<char, size_type> it;
     for (auto v : vertices)
         it.emplace(v, g.insert_vertex(v));
 

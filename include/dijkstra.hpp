@@ -3,8 +3,9 @@
 
 #include <stdexcept>
 #include <utility>
+#include <vector>
 #include <ranges>
-#include <iterator>
+#include <algorithm>
 
 #include <boost/heap/fibonacci_heap.hpp>
 
@@ -22,13 +23,12 @@ struct Negative_Weights : public std::logic_error
 };
 
 template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
-requires std::ranges::forward_range<G>
 class Dijkstra final : public SSSP<G, Traits>
 {
     using sssp = SSSP<G, Traits>;
     using sssp::info_;
-    using vertex_iterator = typename Traits::vertex_iterator;
-    using Info_Node = typename sssp::Info_Node;
+    using typename sssp::size_type;
+    using typename sssp::Info_Node;
 
 public:
 
@@ -36,7 +36,7 @@ public:
 
 private:
 
-    using priority_pair = std::pair<vertex_iterator, distance_type>;
+    using priority_pair = std::pair<size_type, distance_type>;
 
     // we cannot mark this class final because boost inherits from it
     struct priority_comp
@@ -49,38 +49,39 @@ private:
 
 public:
 
-    Dijkstra(const G &g, vertex_iterator source_it) : sssp{g, source_it}
+    Dijkstra(const G &g, size_type source_i) : sssp{g, source_i}
     {
         if (has_negative_weights(g))
             throw Negative_Weights{};
 
         boost::heap::fibonacci_heap<priority_pair,
                                     boost::heap::compare<priority_comp>> Q;
+        using handle_type = decltype(Q)::handle_type;
 
-        for (const auto &[v_it, node] : info_)
-            Q.emplace(v_it, node.distance_);
+        std::vector<handle_type> handles;
+        handles.reserve(Traits::n_vertices(g));
+
+        for (const auto &[u_i, node] : info_)
+            handles[u_i] = Q.emplace(u_i, node.distance_);
 
         while (!Q.empty())
         {
-            auto [u_it, u_d] = Q.top();
+            const auto [u_i, u_d] = Q.top();
             Q.pop();
 
-            Info_Node &u_info = info_.find(u_it)->second;
+            const Info_Node &u_info = info_.find(u_i)->second;
 
-            for (auto v_it : Traits::adjacent_vertices(g, u_it))
+            for (auto v_i : Traits::adjacent_vertices(g, u_i))
             {
-                Info_Node &v_info = info_.find(v_it)->second;
+                Info_Node &v_info = info_.find(v_i)->second;
 
-                if (distance_type d = u_info.distance_ + Traits::weight(g, u_it, v_it);
+                if (distance_type d = u_info.distance_ + Traits::weight(g, u_i, v_i);
                     d < v_info.distance_)
                 {
                     v_info.distance_ = d;
-                    v_info.predecessor_ = u_it;
+                    v_info.predecessor_ = u_i;
 
-                    auto v_pos = std::ranges::find(Q, v_it, &priority_pair::first);
-                    assert(v_pos != std::ranges::end(Q));
-
-                    Q.decrease(Q.s_handle_from_iterator(v_pos), std::pair{v_it, d.value()});
+                    Q.decrease(handles[v_i], std::pair{v_i, d.value()});
                 }
             }
         }
@@ -88,11 +89,13 @@ public:
 
     static bool has_negative_weights(const G &g)
     {
-        for (auto u_it = std::ranges::begin(g), ite = std::ranges::end(g); u_it != ite; ++u_it)
-        {
-            auto cond = [&g, u_it](auto v_it){ return Traits::weight(g, u_it, v_it) < 0; };
+        const size_type n_vertices = Traits::n_vertices(g);
 
-            if (std::ranges::any_of(Traits::adjacent_vertices(g, u_it), cond))
+        for (auto u_i : std::views::iota(size_type{0}, n_vertices))
+        {
+            auto cond = [&g, u_i](size_type v_i){ return Traits::weight(g, u_i, v_i) < 0; };
+
+            if (std::ranges::any_of(Traits::adjacent_vertices(g, u_i), cond))
                 return true;
         }
 
