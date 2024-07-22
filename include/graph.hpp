@@ -50,7 +50,7 @@ public:
             adjacency_list_.try_emplace(i);
     }
 
-    Directed_Graph(std::initializer_list<vertex_type> il) : Directed_Graph{il.begin(), il.end()} {}
+    Directed_Graph(std::initializer_list<vertex_type> il) : Directed_Graph(il.begin(), il.end()) {}
 
     size_type n_vertices() const { return vertices_.size(); }
     size_type n_edges() const
