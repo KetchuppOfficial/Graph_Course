@@ -7,7 +7,7 @@
 
 #include "graph.hpp"
 
-TEST(Graph, Default_Constructor)
+TEST(Directed_Graph, Default_Constructor)
 {
     graphs::Directed_Graph<int> g;
 
@@ -15,7 +15,7 @@ TEST(Graph, Default_Constructor)
     EXPECT_EQ(g.n_edges(), 0);
 }
 
-TEST(Graph, Initializer_List_Constructor)
+TEST(Directed_Graph, Initializer_List_Constructor)
 {
     graphs::Directed_Graph g{1, 2, 3, 4};
     static_assert(std::is_same_v<decltype(g)::vertex_type, int>);
@@ -27,7 +27,7 @@ TEST(Graph, Initializer_List_Constructor)
     EXPECT_TRUE(std::ranges::equal(g, list)); // check that the order of vertices is preserved
 }
 
-TEST(Graph, Iterator_Constructor)
+TEST(Directed_Graph, Iterator_Constructor)
 {
     std::set set{1, 6, 12, 14, 5};
     graphs::Directed_Graph g(set.begin(), set.end());
@@ -39,7 +39,7 @@ TEST(Graph, Iterator_Constructor)
     EXPECT_TRUE(std::ranges::equal(g, set));
 }
 
-TEST(Graph, Insert_Vertex)
+TEST(Directed_Graph, Insert_Vertex)
 {
     graphs::Directed_Graph<int> g;
     auto list = {1, 2, 3, 4};
@@ -59,7 +59,7 @@ TEST(Graph, Insert_Vertex)
 /*
  * 1 ---> 2 ---> 3
  */
-TEST(Graph, Insert_Edge)
+TEST(Directed_Graph, Insert_Edge)
 {
     graphs::Directed_Graph<int> g;
     auto i_1 = g.insert_vertex(1);
@@ -100,7 +100,7 @@ TEST(Graph, Insert_Edge)
  *           |   |
  *           +---+
  */
-TEST(Graph, Erase_Vertex)
+TEST(Directed_Graph, Erase_Vertex)
 {
     graphs::Directed_Graph<int> g;
     auto i_1 = g.insert_vertex(1);
@@ -157,7 +157,7 @@ TEST(Graph, Erase_Vertex)
  * |    |
  * +----+
  */
-TEST(Graph, Erase_Edge)
+TEST(Directed_Graph, Erase_Edge)
 {
     graphs::Directed_Graph<int> g;
     auto i_1 = g.insert_vertex(1);
@@ -225,7 +225,7 @@ TEST(Graph, Erase_Edge)
  *   |    |       |
  *   1 <--+       +--> 4
  */
-TEST(Graph, Vertex_Degree)
+TEST(Directed_Graph, Vertex_Degree)
 {
     graphs::Directed_Graph<int> g;
     auto i_1 = g.insert_vertex(1);
