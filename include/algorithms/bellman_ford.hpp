@@ -1,5 +1,5 @@
-#ifndef INCLUDE_BELLMAN_FORD_HPP
-#define INCLUDE_BELLMAN_FORD_HPP
+#ifndef INCLUDE_ALGORITHMS_BELLMAN_FORD_HPP
+#define INCLUDE_ALGORITHMS_BELLMAN_FORD_HPP
 
 #include <ranges>
 
@@ -69,4 +69,4 @@ public:
 
 } // namespace graphs
 
-#endif // INCLUDE_BELLMAN_FORD_HPP
+#endif // INCLUDE_ALGORITHMS_BELLMAN_FORD_HPP

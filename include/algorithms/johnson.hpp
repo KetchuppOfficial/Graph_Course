@@ -1,5 +1,5 @@
-#ifndef INCLUDE_JOHNSON_HPP
-#define INCLUDE_JOHNSON_HPP
+#ifndef INCLUDE_ALGORITHMS_JOHNSON_HPP
+#define INCLUDE_ALGORITHMS_JOHNSON_HPP
 
 #include <cstddef>
 #include <functional>
@@ -112,4 +112,4 @@ private:
 
 } // namespace graphs
 
-#endif // INCLUDE_JOHNSON_HPP
+#endif // INCLUDE_ALGORITHMS_JOHNSON_HPP

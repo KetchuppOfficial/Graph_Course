@@ -1,5 +1,5 @@
-#ifndef INCLUDE_DISTANCE_HPP
-#define INCLUDE_DISTANCE_HPP
+#ifndef INCLUDE_UTILS_DISTANCE_HPP
+#define INCLUDE_UTILS_DISTANCE_HPP
 
 #include <concepts>
 #include <exception>
@@ -105,4 +105,4 @@ Distance<T> operator+(T lhs, Distance<T> rhs) noexcept { return rhs + lhs; }
 
 } // namespace graphs
 
-#endif // INCLUDE_DISTANCE_HPP
+#endif // INCLUDE_UTILS_DISTANCE_HPP

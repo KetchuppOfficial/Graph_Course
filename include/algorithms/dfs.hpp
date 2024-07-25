@@ -1,5 +1,5 @@
-#ifndef INCLUDE_DFS_HPP
-#define INCLUDE_DFS_HPP
+#ifndef INCLUDE_ALGORITHMS_DFS_HPP
+#define INCLUDE_ALGORITHMS_DFS_HPP
 
 #include <cstddef>
 #include <stack>
@@ -144,4 +144,4 @@ private:
 
 } // namespace graphs
 
-#endif // INCLUDE_DFS_HPP
+#endif // INCLUDE_ALGORITHMS_DFS_HPP

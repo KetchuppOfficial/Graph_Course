@@ -1,5 +1,5 @@
-#ifndef INCLUDE_BFS_HPP
-#define INCLUDE_BFS_HPP
+#ifndef INCLUDE_ALGORITHMS_BFS_HPP
+#define INCLUDE_ALGORITHMS_BFS_HPP
 
 #include <cstddef>
 #include <optional>
@@ -127,4 +127,4 @@ private:
 
 } // namespace graphs
 
-#endif // INCLUDE_BFS_HPP
+#endif // INCLUDE_ALGORITHMS_BFS_HPP

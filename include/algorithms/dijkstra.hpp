@@ -1,5 +1,5 @@
-#ifndef INCLUDE_DIJKSTRA_HPP
-#define INCLUDE_DIJKSTRA_HPP
+#ifndef INCLUDE_ALGORITHMS_DIJKSTRA_HPP
+#define INCLUDE_ALGORITHMS_DIJKSTRA_HPP
 
 #include <stdexcept>
 #include <utility>
@@ -105,4 +105,4 @@ public:
 
 } // namespace graphs
 
-#endif // INCLUDE_DIJKSTRA_HPP
+#endif // INCLUDE_ALGORITHMS_DIJKSTRA_HPP

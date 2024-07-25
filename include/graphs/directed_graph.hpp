@@ -1,5 +1,5 @@
-#ifndef INCLUDE_DIRECTED_GRAPH_HPP
-#define INCLUDE_DIRECTED_GRAPH_HPP
+#ifndef INCLUDE_GRAPHS_DIRECTED_GRAPH_HPP
+#define INCLUDE_GRAPHS_DIRECTED_GRAPH_HPP
 
 #include <cstddef>
 #include <list>
@@ -233,4 +233,4 @@ struct graph_traits<Directed_Graph<T>>
 
 } // namespace graphs
 
-#endif // INCLUDE_DIRECTED_GRAPH_HPP
+#endif // INCLUDE_GRAPHS_DIRECTED_GRAPH_HPP

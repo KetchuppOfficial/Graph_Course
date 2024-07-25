@@ -1,5 +1,5 @@
-#ifndef INCLUDE_GRAPH_TRAITS_HPP
-#define INCLUDE_GRAPH_TRAITS_HPP
+#ifndef INCLUDE_UTILS_GRAPH_TRAITS_HPP
+#define INCLUDE_UTILS_GRAPH_TRAITS_HPP
 
 namespace graphs
 {
@@ -35,4 +35,4 @@ struct graph_traits
 
 } // namespace graphs
 
-#endif // INCLUDE_GRAPH_TRAITS_HPP
+#endif // INCLUDE_UTILS_GRAPH_TRAITS_HPP
