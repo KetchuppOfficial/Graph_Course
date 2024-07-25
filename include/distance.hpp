@@ -20,6 +20,8 @@ class Distance final
 {
 public:
 
+    using value_type = T;
+
     Distance() : is_inf_{true} {}
     Distance(T w) : w_{w}, is_inf_{false} {} // we want implicit conversion
 
