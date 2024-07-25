@@ -12,7 +12,10 @@ struct bad_distance_access : public std::exception
     const char *what() const noexcept override { return "bad distance access"; }
 };
 
-template<std::integral T>
+template<typename T>
+concept arithmetic = std::integral<T> && !std::same_as<bool, std::remove_cv_t<T>>;
+
+template<arithmetic T>
 class Distance final
 {
 public:
