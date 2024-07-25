@@ -86,7 +86,7 @@ std::strong_ordering operator<=>(T lhs, Distance<T> rhs) noexcept
 // Sum
 
 template<arithmetic T>
-Distance<T> operator+(Distance<T> &lhs, Distance<T> &rhs) noexcept
+Distance<T> operator+(Distance<T> lhs, Distance<T> rhs) noexcept
 {
     if (lhs.is_inf() || rhs.is_inf())
         return Distance<T>::inf();
