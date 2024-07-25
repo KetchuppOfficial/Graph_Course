@@ -62,7 +62,7 @@ public:
                     color_table[v_i] = Color::gray;
 
                     Info_Node &v_info = info_.find(v_i)->second;
-                    v_info.distance_ = u_info.distance_ + std::size_t{1};
+                    v_info.distance_ = u_info.distance_ + 1uz;
                     v_info.predecessor_ = u_i;
 
                     Q.push(v_i);
