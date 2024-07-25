@@ -9,9 +9,6 @@ namespace graphs
 template<std::integral T>
 class Distance final
 {
-    T w_;
-    bool is_inf_;
-
 public:
 
     Distance() : is_inf_{true} {}
@@ -21,6 +18,11 @@ public:
     T value() const { return w_; } // using if is_inf() == true is UB
 
     static Distance inf() { return Distance{}; }
+
+private:
+
+    T w_;
+    bool is_inf_;
 };
 
 template<std::integral T>
