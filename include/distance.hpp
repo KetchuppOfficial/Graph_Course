@@ -58,7 +58,7 @@ template<arithmetic T>
 bool operator==(Distance<T> lhs, T rhs) noexcept { return lhs.is_inf() ? false : *lhs == rhs; }
 
 template<arithmetic T>
-bool operator==(T lhs, Distance<T> rhs) noexcept { return *rhs == lhs; }
+bool operator==(T lhs, Distance<T> rhs) noexcept { return rhs == lhs; }
 
 // Ordering
 
