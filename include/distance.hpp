@@ -42,6 +42,8 @@ private:
     bool is_inf_;
 };
 
+// Less than
+
 template<arithmetic T>
 bool operator<(Distance<T> lhs, Distance<T> rhs)
 {
@@ -54,13 +56,45 @@ bool operator<(Distance<T> lhs, Distance<T> rhs)
 }
 
 template<arithmetic T>
+bool operator<(Distance<T> lhs, T rhs) { return lhs.is_inf() ? false : *lhs < rhs; }
+
+template<arithmetic T>
+bool operator<(T lhs, Distance<T> rhs) { return rhs.is_inf() ? true : lhs < *rhs; }
+
+// Greater than or equal to
+
+template<arithmetic T>
 bool operator>=(Distance<T> lhs, Distance<T> rhs) { return !(lhs < rhs); }
+
+template<arithmetic T>
+bool operator>=(Distance<T> lhs, T rhs) { return !(lhs < rhs); }
+
+template<arithmetic T>
+bool operator>=(T lhs, Distance<T> rhs) { return !(lhs < rhs); }
+
+// Greater than
 
 template<arithmetic T>
 bool operator>(Distance<T> lhs, Distance<T> rhs) { return rhs < lhs; }
 
 template<arithmetic T>
+bool operator>(Distance<T> lhs, T rhs) { return rhs < lhs; }
+
+template<arithmetic T>
+bool operator>(T lhs, Distance<T> rhs) { return rhs < lhs; }
+
+// Less than or equal to
+
+template<arithmetic T>
 bool operator<=(Distance<T> lhs, Distance<T> rhs) { return !(rhs < lhs); }
+
+template<arithmetic T>
+bool operator<=(Distance<T> lhs, T rhs) { return !(rhs < lhs); }
+
+template<arithmetic T>
+bool operator<=(T lhs, Distance<T> rhs) { return !(rhs < lhs); }
+
+// Equal
 
 template<arithmetic T>
 bool operator==(Distance<T> lhs, Distance<T> rhs)
@@ -76,6 +110,8 @@ bool operator==(Distance<T> lhs, T rhs) { return lhs.is_inf() ? false : *lhs == 
 
 template<arithmetic T>
 bool operator==(T lhs, Distance<T> rhs) { return rhs.is_inf() ? false : lhs == *rhs; }
+
+// Sum
 
 template<arithmetic T>
 Distance<T> operator+(Distance<T> &lhs, Distance<T> &rhs)
