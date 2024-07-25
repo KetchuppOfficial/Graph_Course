@@ -63,7 +63,7 @@ public:
 
         for (auto predecessor = info_.find(u_i)->second.predecessor_; predecessor.has_value();)
         {
-            u_i = predecessor.value();
+            u_i = *predecessor;
             predecessor = info_.find(u_i)->second.predecessor_;
 
             path.push_back(u_i);
