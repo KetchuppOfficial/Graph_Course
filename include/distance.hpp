@@ -33,7 +33,7 @@ public:
 
 private:
 
-    T w_;
+    T w_{};
     bool is_inf_;
 };
 
