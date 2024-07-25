@@ -35,11 +35,11 @@ public:
                 {
                     Info_Node &v_info = info_.find(v_i)->second;
 
-                    if (distance_type d = u_info.distance_ + Traits::weight(g, u_i, v_i);
-                        d < v_info.distance_)
+                    if (distance_type d = u_info.distance + Traits::weight(g, u_i, v_i);
+                        d < v_info.distance)
                     {
-                        v_info.distance_ = d;
-                        v_info.predecessor_ = u_i;
+                        v_info.distance = d;
+                        v_info.predecessor = u_i;
                     }
                 }
             }
@@ -53,7 +53,7 @@ public:
             {
                 const Info_Node &v_info = info_.find(v_i)->second;
 
-                if (v_info.distance_ > u_info.distance_ + Traits::weight(g, u_i, v_i))
+                if (v_info.distance > u_info.distance + Traits::weight(g, u_i, v_i))
                 {
                     info_.clear();
                     return;

@@ -25,11 +25,11 @@ protected:
 
     struct Info_Node final
     {
-        distance_type distance_;
-        std::optional<size_type> predecessor_;
+        distance_type distance;
+        std::optional<size_type> predecessor;
 
         Info_Node() = default;
-        Info_Node(weight_type d) : distance_{d} {}
+        Info_Node(weight_type d) : distance{d} {}
     };
 
     SSSP(const G &g, size_type source_i)
@@ -51,7 +51,7 @@ protected:
 
 public:
 
-    distance_type distance(size_type u_i) const { return info_.at(u_i).distance_; }
+    distance_type distance(size_type u_i) const { return info_.at(u_i).distance; }
 
     std::vector<size_type> path_to(size_type u_i) const
     {
@@ -61,10 +61,10 @@ public:
 
         std::vector path{u_i};
 
-        for (auto predecessor = info_.find(u_i)->second.predecessor_; predecessor.has_value();)
+        for (auto predecessor = info_.find(u_i)->second.predecessor; predecessor.has_value();)
         {
             u_i = *predecessor;
-            predecessor = info_.find(u_i)->second.predecessor_;
+            predecessor = info_.find(u_i)->second.predecessor;
 
             path.push_back(u_i);
         }

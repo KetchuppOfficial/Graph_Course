@@ -33,9 +33,9 @@ private:
 
     struct Info_Node final
     {
-        std::optional<size_type> predecessor_;
-        time_type discovery_time_;
-        time_type finished_time_;
+        std::optional<size_type> predecessor;
+        time_type discovery_time;
+        time_type finished_time;
     };
 
 public:
@@ -62,21 +62,21 @@ public:
                     {
                         color_table[u_i] = Color::gray;
 
-                        u_info.discovery_time_ = ++time;
+                        u_info.discovery_time = ++time;
 
                         for (auto v_i : Traits::adjacent_vertices(g, u_i))
                         {
                             if (color_table[v_i] == Color::white)
                             {
                                 Info_Node &v_info = info_.find(v_i)->second;
-                                v_info.predecessor_ = u_i;
+                                v_info.predecessor = u_i;
                                 stack.push(v_i);
                             }
                         }
                     }
                     else
                     {
-                        u_info.finished_time_ = ++time;
+                        u_info.finished_time = ++time;
                         stack.pop();
                     }
                 }
@@ -94,8 +94,8 @@ public:
                 time = visit(g, color_table, s_i, time);
     }
 
-    time_type discovery_time(size_type i) const { return info_.at(i).discovery_time_; }
-    time_type finished_time(size_type i) const { return info_.at(i).finished_time_; }
+    time_type discovery_time(size_type i) const { return info_.at(i).discovery_time; }
+    time_type finished_time(size_type i) const { return info_.at(i).finished_time; }
 
 private:
 
@@ -121,20 +121,20 @@ private:
         color_table[u_i] = Color::gray;
 
         Info_Node &u_info = info_.find(u_i)->second;
-        u_info.discovery_time_ = ++time;
+        u_info.discovery_time = ++time;
 
         for (auto v_i : Traits::adjacent_vertices(g, u_i))
         {
             if (color_table[v_i] == Color::white)
             {
                 Info_Node &v_info = info_.find(v_i)->second;
-                v_info.predecessor_ = u_i;
+                v_info.predecessor = u_i;
 
                 time = visit(g, color_table, v_i, time);
             }
         }
 
-        u_info.finished_time_ = ++time;
+        u_info.finished_time = ++time;
 
         return time;
     }

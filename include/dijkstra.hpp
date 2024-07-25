@@ -62,7 +62,7 @@ public:
         handles.reserve(Traits::n_vertices(g));
 
         for (const auto &[u_i, node] : info_)
-            handles[u_i] = Q.emplace(u_i, node.distance_);
+            handles[u_i] = Q.emplace(u_i, node.distance);
 
         while (!Q.empty())
         {
@@ -75,11 +75,11 @@ public:
             {
                 Info_Node &v_info = info_.find(v_i)->second;
 
-                if (distance_type d = u_info.distance_ + Traits::weight(g, u_i, v_i);
-                    d < v_info.distance_)
+                if (distance_type d = u_info.distance + Traits::weight(g, u_i, v_i);
+                    d < v_info.distance)
                 {
-                    v_info.distance_ = d;
-                    v_info.predecessor_ = u_i;
+                    v_info.distance = d;
+                    v_info.predecessor = u_i;
 
                     Q.decrease(handles[v_i], std::pair{v_i, d.value()});
                 }

@@ -30,11 +30,11 @@ private:
 
     struct Info_Node final
     {
-        distance_type distance_;
-        std::optional<size_type> predecessor_;
+        distance_type distance;
+        std::optional<size_type> predecessor;
 
         Info_Node() = default;
-        Info_Node(std::size_t distance) : distance_{distance} {}
+        Info_Node(std::size_t dist) : distance{dist} {}
     };
 
     using color_table_type = std::unordered_map<size_type, Color>;
@@ -62,8 +62,8 @@ public:
                     color_table[v_i] = Color::gray;
 
                     Info_Node &v_info = info_.find(v_i)->second;
-                    v_info.distance_ = u_info.distance_ + 1uz;
-                    v_info.predecessor_ = u_i;
+                    v_info.distance = u_info.distance + 1uz;
+                    v_info.predecessor = u_i;
 
                     Q.push(v_i);
                 }
@@ -71,7 +71,7 @@ public:
         }
     }
 
-    distance_type distance(size_type u_i) const { return info_.at(u_i).distance_; }
+    distance_type distance(size_type u_i) const { return info_.at(u_i).distance; }
 
     std::vector<size_type> path_to(size_type u_i) const
     {
@@ -81,10 +81,10 @@ public:
 
         std::vector path{u_i};
 
-        for (auto predecessor = info_.find(u_i)->second.predecessor_; predecessor.has_value();)
+        for (auto predecessor = info_.find(u_i)->second.predecessor; predecessor.has_value();)
         {
             u_i = *predecessor;
-            predecessor = info_.find(u_i)->second.predecessor_;
+            predecessor = info_.find(u_i)->second.predecessor;
 
             path.push_back(u_i);
         }
