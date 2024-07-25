@@ -9,7 +9,7 @@
 
 #include <boost/heap/fibonacci_heap.hpp>
 
-#include "graph_traits.hpp"
+#include "utils/graph_traits.hpp"
 #include "single_source_shortest_paths.hpp"
 
 namespace graphs

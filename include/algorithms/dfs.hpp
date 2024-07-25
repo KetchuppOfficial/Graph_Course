@@ -8,7 +8,7 @@
 #include <optional>
 #include <ranges>
 
-#include "graph_traits.hpp"
+#include "utils/graph_traits.hpp"
 
 namespace graphs
 {

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "distance.hpp"
+#include "utils/distance.hpp"
 
 TEST(Distance, Constructors)
 {

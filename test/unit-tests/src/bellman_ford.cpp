@@ -5,8 +5,8 @@
 #include <unordered_map>
 #include <initializer_list>
 
-#include "graph.hpp"
-#include "bellman_ford.hpp"
+#include "graphs/graph.hpp"
+#include "algorithms/bellman_ford.hpp"
 
 TEST(Bellman_Ford, Member_Types)
 {

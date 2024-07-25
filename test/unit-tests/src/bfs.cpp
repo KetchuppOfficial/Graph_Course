@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "bfs.hpp"
-#include "graph.hpp"
+#include "algorithms/bfs.hpp"
+#include "graphs/graph.hpp"
 
 TEST(BFS, From_Cormen)
 {

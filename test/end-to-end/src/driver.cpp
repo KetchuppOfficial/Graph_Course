@@ -4,8 +4,8 @@
 #include <unordered_map>
 #include <chrono>
 
-#include "graph.hpp"
-#include "dfs.hpp"
+#include "graphs/graph.hpp"
+#include "algorithms/dfs.hpp"
 
 namespace
 {

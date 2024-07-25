@@ -8,8 +8,8 @@
 #include <vector>
 #include <algorithm>
 
-#include "graph_traits.hpp"
-#include "distance.hpp"
+#include "utils/graph_traits.hpp"
+#include "utils/distance.hpp"
 
 namespace graphs
 {

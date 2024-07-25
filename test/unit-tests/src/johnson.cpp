@@ -2,8 +2,8 @@
 
 #include <unordered_map>
 
-#include "graph.hpp"
-#include "johnson.hpp"
+#include "graphs/graph.hpp"
+#include "algorithms/johnson.hpp"
 
 TEST(Johnson, Nonunique_Paths)
 {

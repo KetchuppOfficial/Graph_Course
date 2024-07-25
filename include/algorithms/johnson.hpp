@@ -9,8 +9,8 @@
 
 #include <boost/container_hash/hash.hpp>
 
-#include "graph_traits.hpp"
-#include "distance.hpp"
+#include "utils/graph_traits.hpp"
+#include "utils/distance.hpp"
 #include "bellman_ford.hpp"
 #include "dijkstra.hpp"
 

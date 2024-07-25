@@ -16,7 +16,7 @@
 
 #include <boost/container_hash/hash.hpp>
 
-#include "graph_traits.hpp"
+#include "utils/graph_traits.hpp"
 
 namespace graphs
 {

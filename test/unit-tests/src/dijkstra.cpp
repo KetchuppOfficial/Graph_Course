@@ -5,8 +5,8 @@
 #include <unordered_map>
 #include <initializer_list>
 
-#include "graph.hpp"
-#include "dijkstra.hpp"
+#include "graphs/graph.hpp"
+#include "algorithms/dijkstra.hpp"
 
 TEST(Dijkstra, Member_Types)
 {
