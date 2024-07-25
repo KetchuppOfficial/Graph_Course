@@ -3,6 +3,7 @@
 
 #include <concepts>
 #include <exception>
+#include <compare>
 
 namespace graphs
 {
@@ -42,59 +43,7 @@ private:
     bool is_inf_;
 };
 
-// Less than
-
-template<arithmetic T>
-bool operator<(Distance<T> lhs, Distance<T> rhs) noexcept
-{
-    if (lhs.is_inf())
-        return false;
-    else if (rhs.is_inf())
-        return true;
-    else
-        return *lhs < *rhs;
-}
-
-template<arithmetic T>
-bool operator<(Distance<T> lhs, T rhs) noexcept { return lhs.is_inf() ? false : *lhs < rhs; }
-
-template<arithmetic T>
-bool operator<(T lhs, Distance<T> rhs) noexcept { return rhs.is_inf() ? true : lhs < *rhs; }
-
-// Greater than or equal to
-
-template<arithmetic T>
-bool operator>=(Distance<T> lhs, Distance<T> rhs) noexcept { return !(lhs < rhs); }
-
-template<arithmetic T>
-bool operator>=(Distance<T> lhs, T rhs) noexcept { return !(lhs < rhs); }
-
-template<arithmetic T>
-bool operator>=(T lhs, Distance<T> rhs) noexcept { return !(lhs < rhs); }
-
-// Greater than
-
-template<arithmetic T>
-bool operator>(Distance<T> lhs, Distance<T> rhs) noexcept { return rhs < lhs; }
-
-template<arithmetic T>
-bool operator>(Distance<T> lhs, T rhs) noexcept { return rhs < lhs; }
-
-template<arithmetic T>
-bool operator>(T lhs, Distance<T> rhs) noexcept { return rhs < lhs; }
-
-// Less than or equal to
-
-template<arithmetic T>
-bool operator<=(Distance<T> lhs, Distance<T> rhs) noexcept { return !(rhs < lhs); }
-
-template<arithmetic T>
-bool operator<=(Distance<T> lhs, T rhs) noexcept { return !(rhs < lhs); }
-
-template<arithmetic T>
-bool operator<=(T lhs, Distance<T> rhs) noexcept { return !(rhs < lhs); }
-
-// Equal
+// Equality
 
 template<arithmetic T>
 bool operator==(Distance<T> lhs, Distance<T> rhs) noexcept
@@ -109,7 +58,30 @@ template<arithmetic T>
 bool operator==(Distance<T> lhs, T rhs) noexcept { return lhs.is_inf() ? false : *lhs == rhs; }
 
 template<arithmetic T>
-bool operator==(T lhs, Distance<T> rhs) noexcept { return rhs.is_inf() ? false : lhs == *rhs; }
+bool operator==(T lhs, Distance<T> rhs) noexcept { return *rhs == lhs; }
+
+// Ordering
+
+template<arithmetic T>
+std::strong_ordering operator<=>(Distance<T> lhs, Distance<T> rhs) noexcept
+{
+    if (lhs.is_inf())
+        return rhs.is_inf() ? std::strong_ordering::equal : std::strong_ordering::greater;
+    else
+        return rhs.is_inf() ? std::strong_ordering::less : *lhs <=> *rhs;
+}
+
+template<arithmetic T>
+std::strong_ordering operator<=>(Distance<T> lhs, T rhs) noexcept
+{
+    return lhs.is_inf() ? std::strong_ordering::greater : *lhs <=> rhs;
+}
+
+template<arithmetic T>
+std::strong_ordering operator<=>(T lhs, Distance<T> rhs) noexcept
+{
+    return rhs.is_inf() ? std::strong_ordering::less : lhs <=> *rhs;
+}
 
 // Sum
 
