@@ -2,7 +2,7 @@
 
 #include <unordered_map>
 
-#include "graphs/graph.hpp"
+#include "graphs/directed_graph.hpp"
 #include "algorithms/johnson.hpp"
 
 TEST(Johnson, Nonunique_Paths)

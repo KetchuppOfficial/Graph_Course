@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <set>
 
-#include "graphs/graph.hpp"
+#include "graphs/directed_graph.hpp"
 
 TEST(Directed_Graph, Default_Constructor)
 {

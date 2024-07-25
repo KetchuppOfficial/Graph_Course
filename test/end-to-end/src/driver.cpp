@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <chrono>
 
-#include "graphs/graph.hpp"
+#include "graphs/directed_graph.hpp"
 #include "algorithms/dfs.hpp"
 
 namespace
