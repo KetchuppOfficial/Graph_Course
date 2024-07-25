@@ -42,7 +42,7 @@ private:
     bool is_inf_;
 };
 
-template<std::integral T>
+template<arithmetic T>
 bool operator<(Distance<T> lhs, Distance<T> rhs)
 {
     if (lhs.is_inf())
@@ -53,16 +53,16 @@ bool operator<(Distance<T> lhs, Distance<T> rhs)
         return *lhs < *rhs;
 }
 
-template<std::integral T>
+template<arithmetic T>
 bool operator>=(Distance<T> lhs, Distance<T> rhs) { return !(lhs < rhs); }
 
-template<std::integral T>
+template<arithmetic T>
 bool operator>(Distance<T> lhs, Distance<T> rhs) { return rhs < lhs; }
 
-template<std::integral T>
+template<arithmetic T>
 bool operator<=(Distance<T> lhs, Distance<T> rhs) { return !(rhs < lhs); }
 
-template<std::integral T>
+template<arithmetic T>
 bool operator==(Distance<T> lhs, Distance<T> rhs)
 {
     if (lhs.is_inf())
@@ -71,13 +71,13 @@ bool operator==(Distance<T> lhs, Distance<T> rhs)
         return rhs.is_inf() ? false : *lhs == *rhs;
 }
 
-template<std::integral T>
+template<arithmetic T>
 bool operator==(Distance<T> lhs, T rhs) { return lhs.is_inf() ? false : *lhs == rhs; }
 
-template<std::integral T>
+template<arithmetic T>
 bool operator==(T lhs, Distance<T> rhs) { return rhs.is_inf() ? false : lhs == *rhs; }
 
-template<std::integral T>
+template<arithmetic T>
 Distance<T> operator+(Distance<T> &lhs, Distance<T> &rhs)
 {
     if (lhs.is_inf() || rhs.is_inf())
@@ -86,13 +86,13 @@ Distance<T> operator+(Distance<T> &lhs, Distance<T> &rhs)
         return *lhs + *rhs;
 }
 
-template<std::integral T>
+template<arithmetic T>
 Distance<T> operator+(Distance<T> lhs, T rhs)
 {
     return lhs.is_inf() ? Distance<T>::inf() : *lhs + rhs;
 }
 
-template<std::integral T>
+template<arithmetic T>
 Distance<T> operator+(T lhs, Distance<T> rhs)
 {
     return rhs + lhs;
