@@ -129,10 +129,7 @@ Distance<T> operator+(Distance<T> lhs, T rhs) noexcept
 }
 
 template<arithmetic T>
-Distance<T> operator+(T lhs, Distance<T> rhs) noexcept
-{
-    return rhs + lhs;
-}
+Distance<T> operator+(T lhs, Distance<T> rhs) noexcept { return rhs + lhs; }
 
 } // namespace graphs
 
