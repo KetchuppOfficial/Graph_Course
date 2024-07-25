@@ -67,18 +67,18 @@ private:
 
     static void reweight(G &g, const Bellman_Ford<G> &bellman_ford)
     {
-        // We can easily call method value() on objects of type distance_type because
+        // We can easily call operator*() on objects of type distance_type because
         // there is definitely a path from S to every other vertex
 
         const size_type n_vertices = Traits::n_vertices(g);
 
         for (auto u_i : std::views::iota(size_type{0}, n_vertices))
         {
-            const weight_type h_u = bellman_ford.distance(u_i).value();
+            const weight_type h_u = *bellman_ford.distance(u_i);
 
             for (auto v_i : Traits::adjacent_vertices(g, u_i))
             {
-                const weight_type h_v = bellman_ford.distance(v_i).value();
+                const weight_type h_v = *bellman_ford.distance(v_i);
                 g.change_weight(u_i, v_i, g.weight(u_i, v_i) + (h_u - h_v));
             }
         }
@@ -86,7 +86,7 @@ private:
 
     void compute_shortest_paths(const G &g, const Bellman_Ford<G> &bellman_ford)
     {
-        // We can easily call method value() on objects of type distance_type because
+        // We can easily call operator*() on objects of type distance_type because
         // there is definitely a path from S to every other vertex
 
         auto n_vertices = Traits::n_vertices(g);
@@ -95,11 +95,11 @@ private:
         for (auto u_i : std::views::iota(size_type{0}, n_vertices))
         {
             const Dijkstra dijkstra{g, u_i};
-            const weight_type h_u = bellman_ford.distance(u_i).value();
+            const weight_type h_u = *bellman_ford.distance(u_i);
 
             for (auto v_i : std::views::iota(size_type{0}, n_vertices))
             {
-                const weight_type h_v = bellman_ford.distance(v_i).value();
+                const weight_type h_v = *bellman_ford.distance(v_i);
                 storage_[std::pair{u_i, v_i}] = dijkstra.distance(v_i) + (h_v - h_u);
             }
         }

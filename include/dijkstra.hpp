@@ -81,7 +81,7 @@ public:
                     v_info.distance = d;
                     v_info.predecessor = u_i;
 
-                    Q.decrease(handles[v_i], std::pair{v_i, d.value()});
+                    Q.decrease(handles[v_i], std::pair{v_i, *d});
                 }
             }
         }
