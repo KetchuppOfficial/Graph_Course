@@ -279,8 +279,8 @@ private:
     std::vector<KNode> data_;
     size_type n_vertices_ = 0;
 
-    template<typename v, typename e>
-    friend class AdjacentVerticesIterator;
+    template<typename v, typename e, bool type>
+    friend class AdjacentPartIterator;
 };
 
 template<typename It> KGraph(It first, It last)
