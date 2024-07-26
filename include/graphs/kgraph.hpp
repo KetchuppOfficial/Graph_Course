@@ -18,6 +18,7 @@
 #include <iterator>
 #include <memory>
 #include <stdexcept>
+#include <format>
 
 #include <boost/container_hash/hash.hpp>
 
