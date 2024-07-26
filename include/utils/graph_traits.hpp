@@ -28,8 +28,8 @@ struct graph_traits
  * static auto adjacent_vertices(const G &g, size_type i)
  *     - returns a range of indexes of adjacent nodes of the node with index i
  *
- * static weight_type weight(const G &g, size_type from, size_type to)
- *     - returns weight of the edge connecting nodes with indexes "from" and "to".
+ * static const weight_type &weight(const G &g, size_type from, size_type to)
+ *     - returns reference to const weight of the edge connecting nodes with indexes "from" and "to".
  */
 };
 

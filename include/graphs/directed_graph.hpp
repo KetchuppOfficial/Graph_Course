@@ -128,7 +128,7 @@ public:
     }
 
     // O(1)
-    weight_type weight(size_type from_i, size_type to_i) const
+    const weight_type &weight(size_type from_i, size_type to_i) const
     {
         return weights_.at(std::pair{from_i, to_i});
     }
@@ -225,7 +225,7 @@ struct graph_traits<Directed_Graph<T>>
         return g.adjacent_vertices(vertex_i);
     }
 
-    static weight_type weight(const Directed_Graph<T> &g, size_type from, size_type to)
+    static const weight_type &weight(const Directed_Graph<T> &g, size_type from, size_type to)
     {
         return g.weight(from, to);
     }
