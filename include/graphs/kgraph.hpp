@@ -25,6 +25,25 @@
 namespace graphs
 {
 
+// inspired by standard library __pair_like concept
+template<typename T>
+concept trinity_like = !std::is_reference_v<T> && requires(T t)
+{
+    typename std::tuple_size<T>::type;
+    requires std::derived_from<std::tuple_size<T>, std::integral_constant<std::size_t, 3>>;
+    typename std::tuple_element_t<0, std::remove_const_t<T>>;
+    typename std::tuple_element_t<1, std::remove_const_t<T>>;
+    typename std::tuple_element_t<2, std::remove_const_t<T>>;
+    { std::get<0>(t) } -> std::convertible_to<const std::tuple_element_t<0, T>&>;
+    { std::get<1>(t) } -> std::convertible_to<const std::tuple_element_t<1, T>&>;
+    { std::get<2>(t) } -> std::convertible_to<const std::tuple_element_t<2, T>&>;
+};
+
+template<typename T>
+concept edge_initializer =
+    trinity_like<T> &&
+    std::same_as<std::tuple_element_t<0, T>, std::tuple_element_t<1, T>>;
+
 // Graph representation like in TAOCP 7.2.1.6
 template<typename V, typename E>
 class KGraph final
@@ -35,14 +54,20 @@ public:
 
     using size_type = std::size_t;
 
-    KGraph(std::initializer_list<std::tuple<V, V, E>> ilist)
+    template<typename It>
+    requires std::forward_iterator<It> &&
+             edge_initializer<typename std::iterator_traits<It>::value_type>
+    KGraph(It first, It last)
     {
-        if (ilist.size() == 0)
+        if (first == last)
             return;
 
-        fill_payload_index_and_tip(ilist);
+        fill_payload_index_and_tip(first, last);
         fill_incident_edges_lists();
     }
+
+    template<trinity_like T>
+    KGraph(std::initializer_list<T> ilist) : KGraph(ilist.begin(), ilist.end()) {}
 
     size_type n_vertices() const noexcept { return n_vertices_; }
     size_type n_edges() const noexcept { return (data_.size() - n_vertices()) / 2; }
@@ -88,12 +113,13 @@ private:
     static_assert(kwidth % 2 == 0, "width parameter of the stream should be an even number");
 
     // to be used in constructor only
-    void fill_payload_index_and_tip(std::initializer_list<std::tuple<V, V, E>> ilist)
+    template<std::forward_iterator It>
+    void fill_payload_index_and_tip(It first, It last)
     {
         assert(data_.empty());
         assert(n_vertices_ == 0);
 
-        std::unordered_map<V, size_type> unique_vertices(ilist.size() * 2);
+        std::unordered_map<V, size_type> unique_vertices(std::distance(first, last) * 2);
         auto insert_unique_vertex = [&](const V &v)
         {
             if (auto it = unique_vertices.find(v); it == unique_vertices.end())
@@ -110,7 +136,7 @@ private:
         using edge_type = std::pair<size_type, size_type>;
         std::unordered_map<edge_type, E, boost::hash<edge_type>> unique_edges;
 
-        for (auto &[v_1, v_2, e] : ilist)
+        for (auto &[v_1, v_2, e] : std::ranges::subrange(first, last))
         {
             size_type i_1 = insert_unique_vertex(v_1);
             size_type i_2 = insert_unique_vertex(v_2);
