@@ -266,8 +266,8 @@ private:
         payload_type payload;
         size_type i;
         std::optional<size_type> tip;
-        size_type next = 0;
-        size_type prev = 0;
+        size_type next;
+        size_type prev;
     };
 
     size_type mate(size_type i) const
