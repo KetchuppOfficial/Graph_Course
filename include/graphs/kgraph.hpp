@@ -250,6 +250,10 @@ private:
     friend class AdjacentVerticesIterator;
 };
 
+template<typename It> KGraph(It first, It last)
+    -> KGraph<std::tuple_element_t<0, typename std::iterator_traits<It>::value_type>,
+              std::tuple_element_t<2, typename std::iterator_traits<It>::value_type>>;
+
 template<typename V, typename E>
 class AdjacentVerticesIterator final
 {
