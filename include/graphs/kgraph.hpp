@@ -261,6 +261,12 @@ private:
         os << '|' << std::endl;
     }
 
+    size_type mate(size_type i) const
+    {
+        assert(i >= n_vertices_);
+        return ((i - n_vertices_) ^ size_type{1}) + n_vertices_;
+    }
+
     struct KNode final
     {
         payload_type payload;
@@ -269,12 +275,6 @@ private:
         size_type next;
         size_type prev;
     };
-
-    size_type mate(size_type i) const
-    {
-        assert(i >= n_vertices_);
-        return ((i - n_vertices_) ^ size_type{1}) + n_vertices_;
-    }
 
     std::vector<KNode> data_;
     size_type n_vertices_ = 0;
