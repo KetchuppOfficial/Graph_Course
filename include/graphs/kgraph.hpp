@@ -17,6 +17,7 @@
 #include <vector>
 #include <iterator>
 #include <memory>
+#include <stdexcept>
 
 #include <boost/container_hash/hash.hpp>
 
@@ -74,6 +75,18 @@ public:
 
     bool empty() const noexcept { return n_vertices_ == 0; }
 
+    auto av_begin(size_type i) const;
+    auto av_cbegin(size_type i) const { return av_begin(); }
+
+    auto av_end(size_type i) const;
+    auto av_cend(size_type i) const { return av_end(); }
+
+    auto ae_begin(size_type i) const;
+    auto ae_cbegin(size_type i) const { return ae_begin(); }
+
+    auto ae_end(size_type i) const;
+    auto ae_cend(size_type i) const { return ae_end(); }
+
     void dump_as_table(std::ostream &os) const
     {
         dump_header(os);
@@ -105,7 +118,26 @@ public:
         os << "}\n";
     }
 
-    auto adjacent_vertices(size_type v) const;
+    auto adjacent_vertices(size_type v) const
+    {
+        return std::ranges::subrange{av_begin(v), av_end(v)};
+    }
+
+    const E &weight(size_type from, size_type to) const
+    {
+        if (from >= n_vertices())
+            throw std::out_of_range{std::format("no vertex with index {}", from)};
+        if (to >= n_vertices())
+            throw std::out_of_range{std::format("no vertex with index {}", to)};
+
+        auto end = ae_end(from);
+        auto it = std::find_if(ae_begin(from), end,
+                               [this, to](size_type i){ return mate(i) == to; });
+        if (it == end)
+            throw std::runtime_error{std::format("there is no edge connecting {} and {}", from, to)};
+
+        return std::get<E>(data_[*it].payload);
+    }
 
 private:
 
@@ -254,8 +286,8 @@ template<typename It> KGraph(It first, It last)
     -> KGraph<std::tuple_element_t<0, typename std::iterator_traits<It>::value_type>,
               std::tuple_element_t<2, typename std::iterator_traits<It>::value_type>>;
 
-template<typename V, typename E>
-class AdjacentVerticesIterator final
+template<typename V, typename E, bool type>
+class AdjacentPartIterator final
 {
 public:
 
@@ -265,58 +297,82 @@ public:
     using reference = const value_type &;
     // pointer is void since C++20
 
-    AdjacentVerticesIterator() = default;
+    AdjacentPartIterator() = default;
 
-    AdjacentVerticesIterator(const KGraph<V, E> &g, value_type i)
-        : g_{std::addressof(g)}, index_{i} {}
+    AdjacentPartIterator(const KGraph<V, E> &g, value_type i)
+        : g_{std::addressof(g)}, edge_index_{i} {}
 
-    value_type operator*() const { return *g_->data_[g_->mate(index_)].tip; }
-
-    AdjacentVerticesIterator &operator++() noexcept
+    value_type operator*() const
     {
-        index_ = g_->data_[index_].next;
+        if constexpr (type)
+            return *g_->data_[g_->mate(edge_index_)].tip;
+        else
+            return edge_index_;
+    }
+
+    AdjacentPartIterator &operator++() noexcept
+    {
+        edge_index_ = g_->data_[edge_index_].next;
         return *this;
     }
 
-    AdjacentVerticesIterator operator++(int) noexcept
+    AdjacentPartIterator operator++(int) noexcept
     {
         auto tmp = *this;
         ++(*this);
         return tmp;
     }
 
-    AdjacentVerticesIterator &operator--() noexcept
+    AdjacentPartIterator &operator--() noexcept
     {
-        index_ = g_->data_[index_].prev;
+        edge_index_ = g_->data_[edge_index_].prev;
         return *this;
     }
 
-    AdjacentVerticesIterator operator--(int) noexcept
+    AdjacentPartIterator operator--(int) noexcept
     {
         auto tmp = *this;
         --(*this);
         return tmp;
     }
 
-    bool operator==(const AdjacentVerticesIterator &rhs) const noexcept
+    bool operator==(const AdjacentPartIterator &rhs) const noexcept
     {
-        return g_ == rhs.g_ && index_ == rhs.index_;
+        return g_ == rhs.g_ && edge_index_ == rhs.edge_index_;
     }
 
 private:
 
     const KGraph<V, E> *g_ = nullptr;
-    value_type index_;
+    value_type edge_index_;
 };
 
-static_assert(std::bidirectional_iterator<AdjacentVerticesIterator<int, int>>);
+template<typename V, typename E>
+using AdjacentVerticesIterator = AdjacentPartIterator<V, E, true>;
 
 template<typename V, typename E>
-auto KGraph<V, E>::adjacent_vertices(size_type v) const
+using AdjacentEdgesIterator = AdjacentPartIterator<V, E, false>;
+
+static_assert(std::bidirectional_iterator<AdjacentVerticesIterator<int, int>>);
+static_assert(std::bidirectional_iterator<AdjacentEdgesIterator<int, int>>);
+
+template<typename V, typename E>
+auto KGraph<V, E>::av_begin(size_type v) const
 {
-    return std::ranges::subrange{AdjacentVerticesIterator{*this, data_[v].next},
-                                 AdjacentVerticesIterator{*this, v}};
+    return AdjacentVerticesIterator<V, E>{*this, data_[v].next};
 }
+
+template<typename V, typename E>
+auto KGraph<V, E>::av_end(size_type v) const { return AdjacentVerticesIterator<V, E>{*this, v}; }
+
+template<typename V, typename E>
+auto KGraph<V, E>::ae_begin(size_type v) const
+{
+    return AdjacentEdgesIterator<V, E>{*this, data_[v].next};
+}
+
+template<typename V, typename E>
+auto KGraph<V, E>::ae_end(size_type v) const { return AdjacentEdgesIterator<V, E>{*this, v}; }
 
 template<typename V, typename E>
 struct graph_traits<KGraph<V, E>>
@@ -335,6 +391,10 @@ public:
     static size_type n_edges(const G &g) { return g.n_edges(); }
 
     static auto adjacent_vertices(const G &g, size_type i) { return g.adjacent_vertices(i); }
+    static const weight_type &weight(const G &g, size_type from, size_type to)
+    {
+        return g.weight(from, to);
+    }
 };
 
 } // namespace graphs
