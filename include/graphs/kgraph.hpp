@@ -169,15 +169,18 @@ private:
         using edge_type = std::pair<size_type, size_type>;
         std::unordered_map<edge_type, E, boost::hash<edge_type>> unique_edges;
 
-        for (auto &[v_1, v_2, e] : std::ranges::subrange(first, last))
+        // we don't use structured binding here because in instantiation of structured binding
+        // function get() is looked up only via ADL, and in case decltype(*first) is not in
+        // namespace std, such function won't be found.
+        for (; first != last; ++first)
         {
-            size_type i_1 = insert_unique_vertex(v_1);
-            size_type i_2 = insert_unique_vertex(v_2);
+            size_type i_1 = insert_unique_vertex(std::get<0>(*first));
+            size_type i_2 = insert_unique_vertex(std::get<1>(*first));
 
             if (i_1 > i_2)
                 std::swap(i_1, i_2);
 
-            unique_edges.emplace(std::pair{i_1, i_2}, std::move(e));
+            unique_edges.emplace(std::pair{i_1, i_2}, std::get<2>(*first));
         }
 
         n_vertices_ = data_.size();
