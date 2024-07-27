@@ -50,7 +50,8 @@ concept edge_initializer =
 template<typename V, typename E>
 class KGraph final
 {
-    using payload_type = std::variant<V, E>;
+    using payload_type =
+        std::conditional_t<std::is_same_v<V, E>, V, std::variant<V, E>>;
 
 public:
 
@@ -92,8 +93,7 @@ public:
     {
         dump_header(os);
         dump_separator(os);
-        dump_line(os, [](const KNode &node) -> const V & { return std::get<V>(node.payload); },
-                      [](const KNode &node) -> const E & { return std::get<E>(node.payload); });
+        dump_line(os, &KNode::get_vertex, &KNode::get_edge);
         dump_separator(os);
         dump_line(os, &KNode::i, &KNode::i, 'i');
         dump_line(os, []([[maybe_unused]] const KNode &node){ return 'X'; },
@@ -108,13 +108,13 @@ public:
               "{\n";
 
         for (auto v : std::views::iota(0uz, n_vertices()))
-            std::println(os, "    node_{} [label = \"{}\"];", v, std::get<V>(data_[v].payload));
+            std::println(os, "    node_{} [label = \"{}\"];", v, data_[v].get_vertex());
 
         os << '\n';
 
         for (auto e = n_vertices(); e != data_.size(); e += 2)
             std::println(os, "    node_{} -- node_{} [label = \"{}\"]",
-                         *data_[e].tip, *data_[e + 1].tip, std::get<E>(data_[e].payload));
+                         *data_[e].tip, *data_[e + 1].tip, data_[e].get_edge());
 
         os << "}\n";
     }
@@ -137,7 +137,7 @@ public:
         if (it == end)
             throw std::runtime_error{std::format("there is no edge connecting {} and {}", from, to)};
 
-        return std::get<E>(data_[*it].payload);
+        return data_[*it].get_edge();
     }
 
 private:
@@ -269,6 +269,24 @@ private:
 
     struct KNode final
     {
+        template<typename Self>
+        auto &&get_vertex(this Self &&self)
+        {
+            if constexpr (std::is_same_v<V, E>)
+                return self.payload;
+            else
+                return std::get<V>(self.payload);
+        }
+
+        template<typename Self>
+        auto &&get_edge(this Self &&self)
+        {
+            if constexpr (std::is_same_v<V, E>)
+                return self.payload;
+            else
+                return std::get<E>(self.payload);
+        }
+
         payload_type payload;
         size_type i;
         std::optional<size_type> tip;
