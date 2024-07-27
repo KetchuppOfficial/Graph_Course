@@ -94,7 +94,8 @@ public:
     {
         dump_header(os);
         dump_separator(os);
-        dump_line(os, &KNode::get_vertex, &KNode::get_edge);
+        dump_line(os, [](const KNode &node) -> const V & { return node.get_vertex(); },
+                      [](const KNode &node) -> const E & { return node.get_edge(); });
         dump_separator(os);
         dump_line(os, &KNode::i, &KNode::i, 'i');
         dump_line(os, []([[maybe_unused]] const KNode &node){ return 'X'; },
