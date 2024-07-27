@@ -19,6 +19,7 @@
 #include <memory>
 #include <stdexcept>
 #include <format>
+#include <type_traits>
 
 #include <boost/container_hash/hash.hpp>
 
