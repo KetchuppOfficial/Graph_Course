@@ -28,7 +28,7 @@
 namespace graphs
 {
 
-// inspired by standard library __pair_like concept
+// inspired by standard library's __pair_like concept
 template<typename T>
 concept trinity_like = !std::is_reference_v<T> && requires(T t)
 {
