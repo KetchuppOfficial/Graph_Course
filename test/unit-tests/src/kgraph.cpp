@@ -6,6 +6,9 @@
 #include "tuple_like.hpp"
 #include "graphs/kgraph.hpp"
 
+static_assert(graphs::edge_initializer<TupleLike>);
+static_assert(graphs::edge_initializer<std::array<int, 3>>);
+
 TEST(KGraph, Initializer_List_Constructor)
 {
     // construction from std::tuple with different vertex and edge types
@@ -33,7 +36,6 @@ TEST(KGraph, Initializer_List_Constructor)
     EXPECT_EQ(g_2.n_edges(), 5);
 
     // construction from a tuple-like standard class
-    static_assert(graphs::edge_initializer<std::array<int, 3>>);
     graphs::KGraph g_3{std::array<int, 3>{1, 2, 0},
                        std::array<int, 3>{1, 3, 0},
                        std::array<int, 3>{2, 3, 0},
@@ -46,7 +48,6 @@ TEST(KGraph, Initializer_List_Constructor)
     EXPECT_EQ(g_3.n_edges(), 5);
 
     // construction from a tuple-like user-defined class
-    static_assert(graphs::trinity_like<TupleLike>);
     graphs::KGraph g_4{TupleLike{1, 2, 'p'},
                        TupleLike{1, 3, 'q'},
                        TupleLike{2, 3, 'r'},
@@ -104,7 +105,6 @@ TEST(KGraph, Iterator_Constructor)
     EXPECT_EQ(g_3.n_edges(), 5);
 
     // construction from a tuple-like user-defined class
-    static_assert(graphs::trinity_like<TupleLike>);
     std::vector vec_4{TupleLike{1, 2, 'p'},
                       TupleLike{1, 3, 'q'},
                       TupleLike{2, 3, 'r'},
