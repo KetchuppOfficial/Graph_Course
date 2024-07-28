@@ -56,6 +56,8 @@ class KGraph final
 
 public:
 
+    using vertex_type = V;
+    using edge_type = E;
     using size_type = std::size_t;
 
     template<typename It>
