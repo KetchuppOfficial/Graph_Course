@@ -217,6 +217,8 @@ struct graph_traits<Directed_Graph<T>>
     using size_type = typename Directed_Graph<T>::size_type;
     using weight_type = typename Directed_Graph<T>::weight_type;
 
+    static constexpr bool is_directed = true;
+
     static size_type n_edges(const Directed_Graph<T> &g) { return g.n_edges(); }
     static size_type n_vertices(const Directed_Graph<T> &g) { return g.n_vertices(); }
 

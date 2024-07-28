@@ -1,6 +1,7 @@
 #ifndef INCLUDE_ALGORITHMS_JOHNSON_HPP
 #define INCLUDE_ALGORITHMS_JOHNSON_HPP
 
+#include <type_traits>
 #include <cstddef>
 #include <functional>
 #include <iterator>
@@ -17,7 +18,8 @@
 namespace graphs
 {
 
-template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
+template<typename G, typename Traits = graph_traits<G>,
+         typename = std::enable_if_t<Traits::is_directed>> // G stands for "graph"
 class Johnson final
 {
     using weight_type = typename Traits::weight_type;

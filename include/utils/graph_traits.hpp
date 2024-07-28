@@ -19,6 +19,8 @@ struct graph_traits
  *
  * using weight_type - type of edge weight
  *
+ * static constexpr bool is_directed; - is graph directed
+ *
  * static size_type n_vertices(const G &g)
  *     - returns the number of nodes in the graph
  *

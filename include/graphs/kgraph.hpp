@@ -416,6 +416,8 @@ public:
     using vertex_type = V;
     using weight_type = E;
 
+    static constexpr bool is_directed = false;
+
     static size_type n_vertices(const G &g) { return g.n_vertices(); }
     static size_type n_edges(const G &g) { return g.n_edges(); }
 

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_ALGORITHMS_SINGLE_SOURCE_SHORTEST_PATHS
 #define INCLUDE_ALGORITHMS_SINGLE_SOURCE_SHORTEST_PATHS
 
+#include <type_traits>
 #include <optional>
 #include <iterator>
 #include <cstddef>
@@ -14,7 +15,8 @@
 namespace graphs
 {
 
-template<typename G, typename Traits = graph_traits<G>> // G stands for "graph"
+template<typename G, typename Traits = graph_traits<G>,
+         typename = std::enable_if_t<Traits::is_directed>> // G stands for "graph"
 class SSSP // single-source shortest paths
 {
 protected:
