@@ -123,6 +123,16 @@ public:
         os << "}\n";
     }
 
+    std::optional<size_type> find_vertex(const V &v) const
+    {
+        auto vertices = std::views::take(data_, n_vertices());
+        auto it = std::ranges::find(vertices, v,
+            [](const KNode &node) -> const V & { return node.get_vertex(); });
+        if (it == vertices.end())
+            return std::nullopt;
+        return std::optional{it - vertices.begin()};
+    }
+
     auto adjacent_vertices(size_type v) const
     {
         return std::ranges::subrange{av_begin(v), av_end(v)};
