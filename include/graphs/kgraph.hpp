@@ -312,7 +312,7 @@ template<typename It> KGraph(It first, It last)
     -> KGraph<std::tuple_element_t<0, typename std::iterator_traits<It>::value_type>,
               std::tuple_element_t<2, typename std::iterator_traits<It>::value_type>>;
 
-template<trinity_like T> KGraph(std::initializer_list<T>)
+template<edge_initializer T> KGraph(std::initializer_list<T>)
     -> KGraph<std::tuple_element_t<0, T>, std::tuple_element_t<2, T>>;
 
 template<typename V, typename E, bool type>
