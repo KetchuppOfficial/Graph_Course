@@ -120,6 +120,30 @@ TEST(KGraph, Iterator_Constructor)
     EXPECT_EQ(g_4.n_edges(), 5);
 }
 
+TEST(KGraph, Weight)
+{
+    graphs::KGraph g{std::tuple{1, 2, 'p'},
+                     std::tuple{1, 3, 'q'},
+                     std::tuple{2, 3, 'r'},
+                     std::tuple{2, 4, 's'},
+                     std::tuple{3, 4, 't'}};
+
+    EXPECT_EQ(g.weight(g.find_vertex(1).value(), g.find_vertex(2).value()), 'p');
+    EXPECT_EQ(g.weight(g.find_vertex(2).value(), g.find_vertex(1).value()), 'p');
+
+    EXPECT_EQ(g.weight(g.find_vertex(1).value(), g.find_vertex(3).value()), 'q');
+    EXPECT_EQ(g.weight(g.find_vertex(3).value(), g.find_vertex(1).value()), 'q');
+
+    EXPECT_EQ(g.weight(g.find_vertex(2).value(), g.find_vertex(3).value()), 'r');
+    EXPECT_EQ(g.weight(g.find_vertex(3).value(), g.find_vertex(2).value()), 'r');
+
+    EXPECT_EQ(g.weight(g.find_vertex(2).value(), g.find_vertex(4).value()), 's');
+    EXPECT_EQ(g.weight(g.find_vertex(4).value(), g.find_vertex(2).value()), 's');
+
+    EXPECT_EQ(g.weight(g.find_vertex(3).value(), g.find_vertex(4).value()), 't');
+    EXPECT_EQ(g.weight(g.find_vertex(4).value(), g.find_vertex(3).value()), 't');
+}
+
 TEST(KGraph, AdjacentVerticesIterator)
 {
     graphs::KGraph g{std::tuple{1, 2, 'p'},
