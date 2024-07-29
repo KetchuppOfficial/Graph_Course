@@ -178,3 +178,27 @@ TEST(KGraph, AdjacentVerticesIterator)
     std::unordered_set adjacent_vertices_4(g.av_begin(i_4), g.av_end(i_4));
     EXPECT_EQ(adjacent_vertices_4, adjacent_vertices_4_model);
 }
+
+TEST(KGraph, AdjacentEdgesIterator)
+{
+    graphs::KGraph g{std::tuple{1, 2, 'p'},
+                     std::tuple{1, 3, 'q'},
+                     std::tuple{2, 3, 'r'},
+                     std::tuple{2, 4, 's'},
+                     std::tuple{3, 4, 't'}};
+
+    std::vector adjacent_edges_model{std::unordered_set{'p', 'q'},
+                                     std::unordered_set{'p', 'r', 's'},
+                                     std::unordered_set{'q', 'r', 't'},
+                                     std::unordered_set{'s', 't'}};
+
+    for (int v : {1, 2, 3, 4})
+    {
+        auto i = g.find_vertex(v).value();
+        std::unordered_set<char> adjacent_edges(2);
+        std::transform(g.ae_begin(i), g.ae_end(i),
+                       std::inserter(adjacent_edges, adjacent_edges.end()),
+                       [&g](auto e){ return g.weight(e); });
+        EXPECT_EQ(adjacent_edges, adjacent_edges_model[i]);
+    }
+}
