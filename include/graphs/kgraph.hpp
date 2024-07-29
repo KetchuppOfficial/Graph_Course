@@ -147,10 +147,10 @@ public:
 
         auto end = ae_end(from);
         auto it = std::find_if(ae_begin(from), end,
-                               [this, to](size_type i){ return mate(i) == to; });
+                               [this, to](size_type edge){ return *data_[mate(edge)].tip == to; });
         if (it == end)
-            throw std::runtime_error{std::format("there is no edge connecting {} and {}", from, to)};
-
+            throw std::runtime_error{
+                std::format("no edge incident on vertices with indices {} and {}", from, to)};
         return data_[*it].get_edge();
     }
 
