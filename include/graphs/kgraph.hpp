@@ -138,6 +138,8 @@ public:
         return std::ranges::subrange{av_begin(v), av_end(v)};
     }
 
+    const E &weight(size_type e) const { return data_[e].get_edge(); }
+
     const E &weight(size_type from, size_type to) const
     {
         if (from >= n_vertices())
