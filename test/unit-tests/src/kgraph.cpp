@@ -152,31 +152,25 @@ TEST(KGraph, AdjacentVerticesIterator)
                      std::tuple{2, 4, 's'},
                      std::tuple{3, 4, 't'}};
 
-    auto i_1 = g.find_vertex(1).value();
-    std::unordered_set adjacent_vertices_1_model{g.find_vertex(2).value(),
-                                                 g.find_vertex(3).value()};
-    std::unordered_set adjacent_vertices_1(g.av_begin(i_1), g.av_end(i_1));
-    EXPECT_EQ(adjacent_vertices_1, adjacent_vertices_1_model);
+    using size_type = decltype(g)::size_type;
 
-    auto i_2 = g.find_vertex(2).value();
-    std::unordered_set adjacent_vertices_2_model{g.find_vertex(1).value(),
-                                                 g.find_vertex(3).value(),
-                                                 g.find_vertex(4).value()};
-    std::unordered_set adjacent_vertices_2(g.av_begin(i_2), g.av_end(i_2));
-    EXPECT_EQ(adjacent_vertices_2, adjacent_vertices_2_model);
+    std::vector<std::unordered_set<size_type>> adjacent_vertices_model{{g.find_vertex(2).value(),
+                                                                        g.find_vertex(3).value()},
+                                                                       {g.find_vertex(1).value(),
+                                                                        g.find_vertex(3).value(),
+                                                                        g.find_vertex(4).value()},
+                                                                       {g.find_vertex(1).value(),
+                                                                        g.find_vertex(2).value(),
+                                                                        g.find_vertex(4).value()},
+                                                                       {g.find_vertex(2).value(),
+                                                                        g.find_vertex(3).value()}};
 
-    auto i_3 = g.find_vertex(3).value();
-    std::unordered_set adjacent_vertices_3_model{g.find_vertex(1).value(),
-                                                 g.find_vertex(2).value(),
-                                                 g.find_vertex(4).value()};
-    std::unordered_set adjacent_vertices_3(g.av_begin(i_3), g.av_end(i_3));
-    EXPECT_EQ(adjacent_vertices_3, adjacent_vertices_3_model);
-
-    auto i_4 = g.find_vertex(4).value();
-    std::unordered_set adjacent_vertices_4_model{g.find_vertex(2).value(),
-                                                 g.find_vertex(3).value()};
-    std::unordered_set adjacent_vertices_4(g.av_begin(i_4), g.av_end(i_4));
-    EXPECT_EQ(adjacent_vertices_4, adjacent_vertices_4_model);
+    for (auto [i, v] : std::views::enumerate(std::views::iota(1, 4 + 1)))
+    {
+        auto index = g.find_vertex(v).value();
+        std::unordered_set adjacent_vertices(g.av_begin(index), g.av_end(index));
+        EXPECT_EQ(adjacent_vertices, adjacent_vertices_model[i]);
+    }
 }
 
 TEST(KGraph, AdjacentEdgesIterator)
@@ -185,18 +179,19 @@ TEST(KGraph, AdjacentEdgesIterator)
                      std::tuple{1, 3, 'q'},
                      std::tuple{2, 3, 'r'},
                      std::tuple{2, 4, 's'},
-                     std::tuple{3, 4, 't'}};
+                     std::tuple{3, 4, 't'},
+                     std::tuple{1, 4, 'p'}}; // non-unique edge value
 
-    std::vector adjacent_edges_model{std::unordered_set{'p', 'q'},
-                                     std::unordered_set{'p', 'r', 's'},
-                                     std::unordered_set{'q', 'r', 't'},
-                                     std::unordered_set{'s', 't'}};
+    std::vector<std::unordered_multiset<char>> adjacent_edges_model{{'p', 'q', 'p'},
+                                                                    {'p', 'r', 's'},
+                                                                    {'q', 'r', 't'},
+                                                                    {'s', 't', 'p'}};
 
-    for (int v : {1, 2, 3, 4})
+    for (auto [i, v] : std::views::enumerate(std::views::iota(1, 4 + 1)))
     {
-        auto i = g.find_vertex(v).value();
-        std::unordered_set<char> adjacent_edges(2);
-        std::transform(g.ae_begin(i), g.ae_end(i),
+        auto index = g.find_vertex(v).value();
+        std::unordered_multiset<char> adjacent_edges(2);
+        std::transform(g.ae_begin(index), g.ae_end(index),
                        std::inserter(adjacent_edges, adjacent_edges.end()),
                        [&g](auto e){ return g.weight(e); });
         EXPECT_EQ(adjacent_edges, adjacent_edges_model[i]);
