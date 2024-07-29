@@ -152,29 +152,27 @@ TEST(KGraph, AdjacentVerticesIterator)
                      std::tuple{2, 4, 's'},
                      std::tuple{3, 4, 't'}};
 
-    using size_type = decltype(g)::size_type;
-
-    size_type i_1 = g.find_vertex(1).value();
+    auto i_1 = g.find_vertex(1).value();
     std::unordered_set adjacent_vertices_1_model{g.find_vertex(2).value(),
                                                  g.find_vertex(3).value()};
     std::unordered_set adjacent_vertices_1(g.av_begin(i_1), g.av_end(i_1));
     EXPECT_EQ(adjacent_vertices_1, adjacent_vertices_1_model);
 
-    size_type i_2 = g.find_vertex(2).value();
+    auto i_2 = g.find_vertex(2).value();
     std::unordered_set adjacent_vertices_2_model{g.find_vertex(1).value(),
                                                  g.find_vertex(3).value(),
                                                  g.find_vertex(4).value()};
     std::unordered_set adjacent_vertices_2(g.av_begin(i_2), g.av_end(i_2));
     EXPECT_EQ(adjacent_vertices_2, adjacent_vertices_2_model);
 
-    size_type i_3 = g.find_vertex(3).value();
+    auto i_3 = g.find_vertex(3).value();
     std::unordered_set adjacent_vertices_3_model{g.find_vertex(1).value(),
                                                  g.find_vertex(2).value(),
                                                  g.find_vertex(4).value()};
     std::unordered_set adjacent_vertices_3(g.av_begin(i_3), g.av_end(i_3));
     EXPECT_EQ(adjacent_vertices_3, adjacent_vertices_3_model);
 
-    size_type i_4 = g.find_vertex(4).value();
+    auto i_4 = g.find_vertex(4).value();
     std::unordered_set adjacent_vertices_4_model{g.find_vertex(2).value(),
                                                  g.find_vertex(3).value()};
     std::unordered_set adjacent_vertices_4(g.av_begin(i_4), g.av_end(i_4));
