@@ -20,6 +20,7 @@
 #include <stdexcept>
 #include <format>
 #include <type_traits>
+#include <string>
 
 #include <boost/container_hash/hash.hpp>
 
@@ -240,32 +241,17 @@ private:
 
     void dump_header(std::ostream &os) const
     {
-        os << "    |";
-        for (auto _ : std::views::iota(0uz, n_vertices() * kwidth / 2 - 4))
-            os << ' ';
-        os << "vertices";
-        for (auto _ : std::views::iota(0uz, n_vertices() * kwidth / 2 - 4))
-            os << ' ';
+        std::string vertices_spaces(n_vertices() * kwidth / 2 - 4, ' ');
+        std::string edges_spaces(n_edges() * kwidth - 3, ' ');
 
-        os << '|';
-        for (auto _ : std::views::iota(0uz, n_edges() * kwidth - 3))
-            os << ' ';
-        os << "edges";
-        for (auto _ : std::views::iota(0uz, n_edges() * kwidth - 2))
-            os << ' ';
-
-        os << '|' << std::endl;
+        os << "    |" << vertices_spaces  << "vertices" << vertices_spaces << '|'
+           << edges_spaces << "edges" << edges_spaces << " |" << std::endl;
     }
 
     void dump_separator(std::ostream &os) const
     {
-        os << "----|" ;
-        for (auto _ : std::views::iota(0uz, n_vertices() * kwidth))
-            os << '-';
-        os << '|';
-        for (auto _ : std::views::iota(0uz, n_edges() * 2 * kwidth))
-            os << '-';
-        os << '|' << std::endl;
+        os << "----|" << std::string(n_vertices() * kwidth, '-') << '|'
+           << std::string(n_edges() * 2 * kwidth, '-') << '|' << std::endl;
     }
 
     template<typename VDumper, typename EDumper>
