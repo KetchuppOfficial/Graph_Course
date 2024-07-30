@@ -48,7 +48,7 @@ concept edge_initializer =
     std::same_as<std::tuple_element_t<0, T>, std::tuple_element_t<1, T>>;
 
 // Graph representation like in TAOCP 7.2.1.6
-template<typename V, typename E>
+template<std::equality_comparable V, typename E>
 class KGraph final
 {
     using payload_type =
@@ -397,22 +397,22 @@ using AdjacentEdgesIterator = AdjacentPartIterator<V, E, false>;
 static_assert(std::bidirectional_iterator<AdjacentVerticesIterator<int, int>>);
 static_assert(std::bidirectional_iterator<AdjacentEdgesIterator<int, int>>);
 
-template<typename V, typename E>
+template<std::equality_comparable V, typename E>
 auto KGraph<V, E>::av_begin(size_type v) const
 {
     return AdjacentVerticesIterator<V, E>{*this, data_[v].next};
 }
 
-template<typename V, typename E>
+template<std::equality_comparable V, typename E>
 auto KGraph<V, E>::av_end(size_type v) const { return AdjacentVerticesIterator<V, E>{*this, v}; }
 
-template<typename V, typename E>
+template<std::equality_comparable V, typename E>
 auto KGraph<V, E>::ae_begin(size_type v) const
 {
     return AdjacentEdgesIterator<V, E>{*this, data_[v].next};
 }
 
-template<typename V, typename E>
+template<std::equality_comparable V, typename E>
 auto KGraph<V, E>::ae_end(size_type v) const { return AdjacentEdgesIterator<V, E>{*this, v}; }
 
 template<typename V, typename E>
