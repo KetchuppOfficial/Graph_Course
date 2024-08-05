@@ -6,6 +6,7 @@
 #include <initializer_list>
 #include <tuple>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <algorithm>
 #include <ostream>
@@ -29,6 +30,18 @@
 namespace graphs
 {
 
+// copy of standard library's __pair_like concept
+template<typename T>
+concept pair_like = !std::is_reference_v<T> && requires(T t)
+{
+    typename std::tuple_size<T>::type;
+    requires std::derived_from<std::tuple_size<T>, std::integral_constant<std::size_t, 2>>;
+    typename std::tuple_element_t<0, std::remove_const_t<T>>;
+    typename std::tuple_element_t<1, std::remove_const_t<T>>;
+    { std::get<0>(t) } -> std::convertible_to<const std::tuple_element_t<0, T>&>;
+    { std::get<1>(t) } -> std::convertible_to<const std::tuple_element_t<1, T>&>;
+};
+
 // inspired by standard library's __pair_like concept
 template<typename T>
 concept trinity_like = !std::is_reference_v<T> && requires(T t)
@@ -44,16 +57,37 @@ concept trinity_like = !std::is_reference_v<T> && requires(T t)
 };
 
 template<typename T>
-concept edge_initializer =
+concept weighted_edge_initializer =
     trinity_like<T> &&
     std::same_as<std::tuple_element_t<0, T>, std::tuple_element_t<1, T>>;
+
+template<typename T>
+concept unweighted_edge_initializer =
+    pair_like<T> &&
+    std::same_as<std::tuple_element_t<0, T>, std::tuple_element_t<1, T>>;
+
+template<typename T>
+concept edge_initializer = weighted_edge_initializer<T> || unweighted_edge_initializer<T>;
+
+template<typename It>
+concept weighted_edge_initializer_iterator =
+    std::forward_iterator<It> &&
+    weighted_edge_initializer<typename std::iterator_traits<It>::value_type>;
+
+template<typename It>
+concept unweighted_edge_initializer_iterator =
+    std::forward_iterator<It> &&
+    unweighted_edge_initializer<typename std::iterator_traits<It>::value_type>;
 
 // Graph representation like in TAOCP 7.2.1.6
 template<std::equality_comparable V, typename E>
 class KGraph final
 {
+    static consteval bool weighted() { return !std::is_same_v<std::remove_cv_t<E>, void>; }
+
     using payload_type =
-        std::conditional_t<std::is_same_v<V, E>, V, std::variant<V, E>>;
+        std::conditional_t<std::is_same_v<V, E>, V,
+                           std::conditional_t<weighted(), std::variant<V, E>, std::optional<V>>>;
 
 public:
 
@@ -73,7 +107,7 @@ public:
         fill_incident_edges_lists();
     }
 
-    template<trinity_like T>
+    template<edge_initializer T>
     KGraph(std::initializer_list<T> ilist) : KGraph(ilist.begin(), ilist.end()) {}
 
     size_type n_vertices() const noexcept { return n_vertices_; }
@@ -95,13 +129,19 @@ public:
 
     void dump_as_table(std::ostream &os) const
     {
+        auto nothing_dumper = []([[maybe_unused]] const KNode &node){ return 'X'; };
+        auto vertex_dumper = [](const KNode &node) -> const V & { return node.get_vertex(); };
+
         dump_header(os);
         dump_separator(os);
-        dump_line(os, [](const KNode &node) -> const V & { return node.get_vertex(); },
-                      [](const KNode &node) -> const E & { return node.get_edge(); });
+        if constexpr (weighted())
+            dump_line(os, vertex_dumper,
+                          [](const KNode &node) -> const E & { return node.get_edge(); });
+        else
+            dump_line(os, vertex_dumper, nothing_dumper);
         dump_separator(os);
         dump_line(os, &KNode::i, &KNode::i, 'i');
-        dump_line(os, []([[maybe_unused]] const KNode &node){ return 'X'; },
+        dump_line(os, nothing_dumper,
                       [](const KNode &node){ return *node.tip; }, 't');
         dump_line(os, &KNode::next, &KNode::next, 'n');
         dump_line(os, &KNode::prev, &KNode::prev, 'p');
@@ -118,8 +158,13 @@ public:
         os << '\n';
 
         for (auto e = n_vertices(); e != data_.size(); e += 2)
-            std::println(os, "    node_{} -- node_{} [label = \"{}\"]",
-                         *data_[e].tip, *data_[e + 1].tip, data_[e].get_edge());
+        {
+            if constexpr (weighted())
+                std::println(os, "    node_{} -- node_{} [label = \"{}\"]",
+                             *data_[e].tip, *data_[e + 1].tip, weight(e));
+            else
+                std::println(os, "    node_{} -- node_{}", *data_[e].tip, *data_[e + 1].tip);
+        }
 
         os << "}\n";
     }
@@ -139,9 +184,10 @@ public:
         return std::ranges::subrange{av_begin(v), av_end(v)};
     }
 
-    const E &weight(size_type e) const { return data_[e].get_edge(); }
-
-    const E &weight(size_type from, size_type to) const
+    // use auto& here because of the possibility for E to be (possibly cv-qualified) void and
+    // because such type is not referencable.
+    auto &weight(size_type e) const { return data_[e].get_edge(); }
+    auto &weight(size_type from, size_type to) const
     {
         if (from >= n_vertices())
             throw std::out_of_range{std::format("no vertex with index {}", from)};
@@ -184,7 +230,10 @@ private:
         };
 
         using edge_type = std::pair<size_type, size_type>;
-        std::unordered_map<edge_type, E, boost::hash<edge_type>> unique_edges;
+        using edges_set = std::unordered_set<edge_type, boost::hash<edge_type>>;
+        using edges_map = std::unordered_map<edge_type, E, boost::hash<edge_type>>;
+
+        std::conditional_t<weighted(), edges_map, edges_set> unique_edges;
 
         // we don't use structured binding here because in instantiation of structured binding
         // function get() is looked up only via ADL, and in case decltype(*first) is not in
@@ -197,15 +246,29 @@ private:
             if (i_1 > i_2)
                 std::swap(i_1, i_2);
 
-            unique_edges.emplace(std::pair{i_1, i_2}, std::get<2>(*first));
+            if constexpr (weighted())
+                unique_edges.emplace(std::pair{i_1, i_2}, std::get<2>(*first));
+            else
+                unique_edges.emplace(std::pair{i_1, i_2});
         }
 
         n_vertices_ = data_.size();
 
-        for (auto &[edge, e] : unique_edges)
+        if constexpr (weighted())
         {
-            data_.emplace_back(e, data_.size(), edge.first);
-            data_.emplace_back(std::move(e), data_.size(), edge.second);
+            for (auto &[edge, e] : unique_edges)
+            {
+                data_.emplace_back(e, data_.size(), edge.first);
+                data_.emplace_back(std::move(e), data_.size(), edge.second);
+            }
+        }
+        else
+        {
+            for (auto &edge : unique_edges)
+            {
+                data_.emplace_back(std::nullopt, data_.size(), edge.first);
+                data_.emplace_back(std::nullopt, data_.size(), edge.second);
+            }
         }
     }
 
@@ -279,16 +342,18 @@ private:
         {
             if constexpr (std::is_same_v<V, E>)
                 return self.payload;
-            else
+            else if constexpr (weighted())
                 return std::get<V>(self.payload);
+            else
+                return *self.payload;
         }
 
         template<typename Self>
-        auto &&get_edge(this Self &&self)
+        auto &&get_edge(this Self &&self) // is not instantiated for unweighted graphs
         {
             if constexpr (std::is_same_v<V, E>)
                 return self.payload;
-            else
+            else if constexpr (weighted())
                 return std::get<E>(self.payload);
         }
 
@@ -306,12 +371,18 @@ private:
     friend class AdjacentPartIterator;
 };
 
-template<typename It> KGraph(It first, It last)
+template<weighted_edge_initializer_iterator It> KGraph(It first, It last)
     -> KGraph<std::tuple_element_t<0, typename std::iterator_traits<It>::value_type>,
               std::tuple_element_t<2, typename std::iterator_traits<It>::value_type>>;
 
-template<edge_initializer T> KGraph(std::initializer_list<T>)
+template<unweighted_edge_initializer_iterator It> KGraph(It first, It last)
+    -> KGraph<std::tuple_element_t<0, typename std::iterator_traits<It>::value_type>, void>;
+
+template<weighted_edge_initializer T> KGraph(std::initializer_list<T>)
     -> KGraph<std::tuple_element_t<0, T>, std::tuple_element_t<2, T>>;
+
+template<unweighted_edge_initializer T> KGraph(std::initializer_list<T>)
+    -> KGraph<std::tuple_element_t<0, T>, void>;
 
 template<typename V, typename E, bool type>
 class AdjacentPartIterator final
