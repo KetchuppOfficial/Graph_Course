@@ -181,7 +181,7 @@ public:
     }
 
     // use auto& here because of the possibility for E to be (possibly cv-qualified) void and
-    // because such type is not referencable.
+    // because such type cannot be referenced.
     auto &weight(size_type e) const { return data_[e].get_edge(); }
     auto &weight(size_type from, size_type to) const
     {
