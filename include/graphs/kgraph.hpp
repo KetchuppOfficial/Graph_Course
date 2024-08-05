@@ -83,12 +83,6 @@ concept unweighted_edge_initializer_iterator =
 template<std::equality_comparable V, typename E>
 class KGraph final
 {
-    static consteval bool weighted() { return !std::is_same_v<std::remove_cv_t<E>, void>; }
-
-    using payload_type =
-        std::conditional_t<std::is_same_v<V, E>, V,
-                           std::conditional_t<weighted(), std::variant<V, E>, std::optional<V>>>;
-
 public:
 
     using vertex_type = V;
@@ -114,6 +108,8 @@ public:
     size_type n_edges() const noexcept { return (data_.size() - n_vertices()) / 2; }
 
     bool empty() const noexcept { return n_vertices_ == 0; }
+
+    static consteval bool weighted() { return !std::is_same_v<std::remove_cv_t<E>, void>; }
 
     auto av_begin(size_type i) const;
     auto av_cbegin(size_type i) const { return av_begin(); }
@@ -356,6 +352,10 @@ private:
             else if constexpr (weighted())
                 return std::get<E>(self.payload);
         }
+
+        using payload_type =
+        std::conditional_t<std::is_same_v<V, E>, V,
+                           std::conditional_t<weighted(), std::variant<V, E>, std::optional<V>>>;
 
         payload_type payload;
         size_type i;
