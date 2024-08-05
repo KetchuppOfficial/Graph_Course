@@ -154,7 +154,7 @@ public:
         if (it == end)
             throw std::runtime_error{
                 std::format("no edge incident on vertices with indices {} and {}", from, to)};
-        return data_[*it].get_edge();
+        return weight(*it);
     }
 
 private:
