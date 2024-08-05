@@ -112,16 +112,16 @@ public:
     static consteval bool weighted() { return !std::is_same_v<std::remove_cv_t<E>, void>; }
 
     auto av_begin(size_type i) const;
-    auto av_cbegin(size_type i) const { return av_begin(); }
+    auto av_cbegin(size_type i) const { return av_begin(i); }
 
     auto av_end(size_type i) const;
-    auto av_cend(size_type i) const { return av_end(); }
+    auto av_cend(size_type i) const { return av_end(i); }
 
     auto ae_begin(size_type i) const;
-    auto ae_cbegin(size_type i) const { return ae_begin(); }
+    auto ae_cbegin(size_type i) const { return ae_begin(i); }
 
     auto ae_end(size_type i) const;
-    auto ae_cend(size_type i) const { return ae_end(); }
+    auto ae_cend(size_type i) const { return ae_end(i); }
 
     void dump_as_table(std::ostream &os) const
     {
