@@ -354,8 +354,8 @@ private:
         }
 
         using payload_type =
-        std::conditional_t<std::is_same_v<V, E>, V,
-                           std::conditional_t<weighted(), std::variant<V, E>, std::optional<V>>>;
+            std::conditional_t<std::is_same_v<V, E>, V,
+                               std::conditional_t<weighted(), std::variant<V, E>, std::optional<V>>>;
 
         payload_type payload;
         size_type i;
