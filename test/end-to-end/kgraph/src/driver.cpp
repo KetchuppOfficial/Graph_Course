@@ -1,11 +1,13 @@
+#include <string_view>
 #include <iostream>
-#include <stdexcept>
-#include <string>
+#include <regex>
+#include <format>
 #include <vector>
 #include <tuple>
-#include <print>
-#include <regex>
+#include <string>
 #include <cassert>
+#include <stdexcept>
+#include <print>
 
 #include "graphs/kgraph.hpp"
 
