@@ -16,9 +16,8 @@ constexpr std::string_view integer_regex = "(0|-?[1-9]\\d*)";
 
 graphs::KGraph<int, int> get_data(std::istream &is)
 {
-    static const auto regex_str = std::format("\\s*{}\\s+--\\s+{}\\s*,\\s+{}\\s*",
-                                              integer_regex, integer_regex, integer_regex);
-    static const std::regex line_regex{regex_str};
+    static const std::regex line_regex{std::format("\\s*{}\\s+--\\s+{}\\s*,\\s+{}\\s*",
+                                                   integer_regex, integer_regex, integer_regex)};
 
     std::vector<std::tuple<int, int, int>> edges_list;
 
