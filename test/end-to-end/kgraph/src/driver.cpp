@@ -7,7 +7,6 @@
 #include <string>
 #include <cassert>
 #include <stdexcept>
-#include <print>
 
 #include "graphs/kgraph.hpp"
 
@@ -57,11 +56,11 @@ int main() try
 }
 catch (const std::exception &e)
 {
-    std::println("Error: {}. Abort", e.what());
+    std::println(std::cerr, "Error: {}. Abort", e.what());
     return 1;
 }
 catch (...)
 {
-    std::println("Unknown exception. Abort");
+    std::println(std::cerr, "Unknown exception. Abort");
     return 1;
 }
